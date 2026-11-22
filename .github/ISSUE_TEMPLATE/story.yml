@@ -1,0 +1,36 @@
+name: Story
+description: Deliverable slice of an epic (attach it as a sub-issue of the epic)
+title: "X-### "
+type: Story
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      value: |
+        - [ ]
+        - [ ] Tests, docs and compatibility-matrix impact included (AGENTS.md definition of done)
+    validations:
+      required: true
+  - type: dropdown
+    id: size
+    attributes:
+      label: Size
+      options: ["S (1–3 days)", "M (1–2 weeks)", "L (multi-week)"]
+  - type: textarea
+    id: deps
+    attributes:
+      label: Dependencies
+      description: Link blocking issues with GitHub's "blocked by" relationship as well.
+  - type: checkboxes
+    id: gate
+    attributes:
+      label: Review gate
+      options:
+        - label: Touches auth, schema, UUID mapping, core patch, runtime permissions, plugin activation or upgrades (requires CODEOWNER approval)

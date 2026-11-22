@@ -7,7 +7,7 @@
 | WordPress | **7.1**, exact pinned patch release/build and checksum | Next releases experimental until patchset revalidated | hard fail if no matching signed patch manifest |
 | PHP | **8.4.x**, supported upstream patch level | 8.5.x CI-candidate; 8.3 and older not supported by Pressgres MVP | check CLI and FPM versions/extensions |
 | PostgreSQL | **18.x** | 19.x candidate after tested; 17 and earlier reject for native `uuidv7()` default | require `uuidv7()` + extract version returns 7 |
-| Redis | **7.4.x or 8.x** after CI validation of selected object-cache integration | version policy frozen in release lockfile | verify INFO, TLS, auth and cache ops |
+| Redis / Valkey | **Redis 7.4.x/8.x or Valkey 8.x** after CI validation of selected object-cache integration; licensing choice pending ADR-010 (Redis 7.4+ RSAL/SSPL, 8.x adds AGPL; Valkey BSD) | version policy frozen in release lockfile | verify INFO, TLS, auth and cache ops |
 | Composer | **2.x** exact supported minor in CI | newer as validated | reject unsupported platform |
 | WP-CLI | **2.x** exact tested release in lockfile | other versions subject to integration tests | diagnostic warning/block as appropriate |
 | OS/arch | Linux x86_64, arm64 (CI gated) | Windows/macOS via DDEV locally | container/environment checks |
@@ -37,8 +37,8 @@ Installer downloads only release-manifest entries containing upstream WordPress 
 
 ## Authoritative resources
 
-- WordPress version 7.1 hosting compatibility: https://make.wordpress.org/hosting/handbook/compatibility/version/7-1/
-- WordPress PHP compatibility: https://make.wordpress.org/core/handbook/references/php-compatibility-and-wordpress-versions/
-- WordPress server requirements: https://wordpress.org/about/requirements/
-- PostgreSQL 18 UUID: https://www.postgresql.org/docs/18/datatype-uuid.html
-- DDEV services: https://docs.ddev.com/en/stable/users/extend/additional-services/
+- WordPress version 7.1 hosting compatibility: <https://make.wordpress.org/hosting/handbook/compatibility/version/7-1/>
+- WordPress PHP compatibility: <https://make.wordpress.org/core/handbook/references/php-compatibility-and-wordpress-versions/>
+- WordPress server requirements: <https://wordpress.org/about/requirements/>
+- PostgreSQL 18 UUID: <https://www.postgresql.org/docs/18/datatype-uuid.html>
+- DDEV services: <https://docs.ddev.com/en/stable/users/extend/additional-services/>

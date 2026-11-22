@@ -1,9 +1,11 @@
-# Replace placeholders with actual maintainer teams before enabling protected rules.
-/packages/identity/ @OWNER-IDENTITY
-/packages/database/ @OWNER-DATABASE
-/packages/sql/ @OWNER-DATABASE
-/packages/schema/ @OWNER-DATABASE
-/patches/ @OWNER-CORE
-/adapters/ @OWNER-COMPAT
-/packages/security/ @OWNER-SECURITY
-/migrations/ @OWNER-DATABASE @OWNER-SECURITY
+# Default owner until maintainer teams exist (see docs/09 for domain ownership model).
+*                     @EmVeeNL
+/packages/identity/   @EmVeeNL
+/packages/database/   @EmVeeNL
+/packages/sql/        @EmVeeNL
+/packages/schema/     @EmVeeNL
+/patches/             @EmVeeNL
+/adapters/            @EmVeeNL
+/packages/security/   @EmVeeNL
+/migrations/          @EmVeeNL
+/.github/             @EmVeeNL
