@@ -59,3 +59,7 @@ Work is tracked as Epics → Stories (GitHub issue types + sub-issues) on the [P
 - Auto-translated migrations are not trusted until tested against disposable databases and reviewed.
 - Compatibility claims must be pinned to tested WordPress + PHP + PostgreSQL + plugin versions.
 - No code included in this archive is a deployable implementation; sample code and configuration are **illustrative contracts**.
+
+## License
+
+[GPL-2.0-or-later](LICENSE), the same license as WordPress. Pressgres distributes a patched WordPress core, WordPress drop-ins and plugins (derivative works of WordPress), and intends to reuse GPL-licensed code such as the WordPress SQLite Database Integration parser, so a GPL-compatible license is required. Contributions are accepted under the same terms. Name/trademark clearance is tracked separately in R-015.
