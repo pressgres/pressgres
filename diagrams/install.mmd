@@ -1,0 +1,16 @@
+flowchart TD
+    A["wps init"] --> B["Validate YAML + secrets refs"]
+    B --> C{"Preflight versions + TLS + roles + UUIDv7 OK?"}
+    C -- No --> F["Fail safely with diagnostics"]
+    C -- Yes --> D["Generate no-write install plan"]
+    D --> E{"Operator approval?"}
+    E -- No --> F
+    E -- Yes --> G["Acquire lock; record checkpoint"]
+    G --> H["Fetch verified WP + apply pinned patchset"]
+    H --> I["Provision PG roles + native schema"]
+    I --> J["Install db.php, cache drop-in, MU plugin"]
+    J --> K["Generate wp-config + bootstrap site/admin"]
+    K --> L["Verify UUID, REST, Redis, schema"]
+    L --> M{"All tests pass?"}
+    M -- Yes --> N["Seal lockfile; release; revoke migration credentials"]
+    M -- No --> R["Quarantine; restore checkpoint / compensate; report"]

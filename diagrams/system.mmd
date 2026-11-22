@@ -1,0 +1,16 @@
+flowchart TB
+    CLI["wps CLI / Installer"] --> Manifest["Release + Patch Manifest"]
+    CLI --> WP["Managed WordPress 7.1 (UUID patchset)"]
+    Admin["Admin / REST / Plugins"] --> WP
+    WP --> DB["db.php - wpdb facade"]
+    WP --> Cache["object-cache.php"]
+    DB --> AST["MySQL Parser + AST Semantic Mapper"]
+    AST --> Driver["PDO PostgreSQL Executor"]
+    Driver --> PG[("PostgreSQL 18: UUIDv7")]
+    Cache --> Redis[("Redis object cache")]
+    CLI --> Schema["Schema + Migration Engine"]
+    Schema --> PG
+    CLI --> Compat["Plugin Scanner + Adapter Registry"]
+    Compat --> Sandbox["Isolated Test Runtime"]
+    Sandbox --> PGTest[("Disposable PostgreSQL")]
+    style WP fill:#dbeafe,stroke:#2563eb,color:#111827

@@ -1,0 +1,16 @@
+flowchart TD
+    A["Plugin ZIP / WP catalog / Composer"] --> B["Download + checksum/provenance verification"]
+    B --> C["Static scan: SQL, DDL, IDs, hooks, direct drivers"]
+    C --> D{"Known compatible version?"}
+    D -- No --> E["Manifest candidate + evidence"]
+    D -- Yes --> F["Load reviewed adapter + lock hash"]
+    E --> G["Ephemeral sandbox: activate + migrate + exercise API"]
+    F --> G
+    G --> H{"UUID, SQL and behavior pass?"}
+    H -- No --> X["BLOCK / quarantine; report remediation"]
+    H -- Yes --> I["Human/CI approval + immutable plan"]
+    I --> J["Backup + migration lock + apply PG changes"]
+    J --> K{"Migration checks pass?"}
+    K -- No --> X
+    K -- Yes --> L["Activate on managed runtime"]
+    L --> M["Post-activation verification + monitoring"]

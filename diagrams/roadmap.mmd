@@ -1,0 +1,7 @@
+flowchart LR
+ M0["M0: Feasibility + ADR"] --> M1["M1: Installer skeleton"]
+ M0 --> M2["M2: UUID-aware WP + PG"]
+ M1 --> M2
+ M2 --> M3["M3: SQL semantics + Redis"]
+ M3 --> M4["M4: Plugin adapters + migration pilot"]
+ M4 --> M5["M5: Ops, recovery, 1.0 RC"]

@@ -1,0 +1,21 @@
+erDiagram
+    LEGACY_USERS ||--o{ LEGACY_POSTS : "numeric author ID"
+    NEW_USERS ||--o{ NEW_POSTS : "UUID post_author"
+    LEGACY_USERS {
+      BIGINT ID PK
+      VARCHAR user_login
+    }
+    LEGACY_POSTS {
+      BIGINT ID PK
+      BIGINT post_author
+      BIGINT post_parent
+    }
+    NEW_USERS {
+      UUID ID PK
+      VARCHAR user_login
+    }
+    NEW_POSTS {
+      UUID ID PK
+      UUID post_author FK
+      UUID post_parent FK
+    }

@@ -1,0 +1,48 @@
+# Sample only; no implementation shipped with this archive.
+schema_version: '1.0'
+project:
+  name: example-site
+  environment: production
+wordpress:
+  version: '7.1' # release manifest will pin exact patch release + hash
+  core_mode: managed_uuid
+  auto_updates: false
+  multisite: false
+identity:
+  type: uuid
+  version: 7
+  generator: postgresql
+  allow_integer_fallback: false
+database:
+  engine: postgresql
+  minimum_version: '18'
+  driver: pdo_pgsql
+  host: '${WPS_DB_HOST}'
+  name: '${WPS_DB_NAME}'
+  runtime_user: '${WPS_DB_USER}'
+  password: '${WPS_DB_PASSWORD}'
+  sslmode: verify-full
+  sslrootcert: '${WPS_PG_CA_FILE}'
+  unsupported_sql: reject
+redis:
+  enabled: true
+  driver: phpredis
+  host: '${WPS_REDIS_HOST}'
+  password: '${WPS_REDIS_PASSWORD}'
+  tls: true
+  prefix: 'pressgres:prod:site-1:'
+  fail_policy: request_local_cache
+security:
+  profile: hardened
+  require_https: true
+  separate_migration_role: true
+  admin_file_modifications: false
+  audit_log: true
+plugins:
+  unknown_policy: quarantine
+  require_approved_adapters: true
+  run_migrations_in_sandbox: true
+installer:
+  strict_versions: true
+  backup_before_upgrade: true
+  fail_on_missing_core_patch: true

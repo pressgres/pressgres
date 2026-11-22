@@ -1,0 +1,9 @@
+# Replace placeholders with actual maintainer teams before enabling protected rules.
+/packages/identity/ @OWNER-IDENTITY
+/packages/database/ @OWNER-DATABASE
+/packages/sql/ @OWNER-DATABASE
+/packages/schema/ @OWNER-DATABASE
+/patches/ @OWNER-CORE
+/adapters/ @OWNER-COMPAT
+/packages/security/ @OWNER-SECURITY
+/migrations/ @OWNER-DATABASE @OWNER-SECURITY

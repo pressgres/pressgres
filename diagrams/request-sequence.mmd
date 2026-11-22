@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant Client as REST/Plugin Client
+    participant WP as UUID-aware WordPress
+    participant DB as db.php/$wpdb
+    participant SQL as SQL AST Adapter
+    participant PG as PostgreSQL 18
+    participant Cache as Redis Cache
+    Client->>WP: create post {title...}
+    WP->>DB: INSERT post with UUID-aware fields
+    DB->>SQL: parse/translate or native query
+    SQL->>PG: INSERT ... RETURNING "ID"
+    PG-->>SQL: UUIDv7
+    SQL-->>DB: normalized result + UUID ID
+    DB-->>WP: canonical UUID string
+    WP->>Cache: invalidate relevant groups
+    WP-->>Client: REST id: "019...-7..."
+    Note over WP,DB: Never cast UUID to int or reinterpret missing FK as UUID zero

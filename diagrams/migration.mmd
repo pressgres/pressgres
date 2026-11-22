@@ -1,0 +1,15 @@
+flowchart TD
+    A["Read-only MySQL snapshot"] --> B["Inventory schema + plugin versions"]
+    B --> C{"All referenced entities and opaque payloads mapped?"}
+    C -- No --> Z["BLOCK: require explicit typed adapter"]
+    C -- Yes --> D["Allocate UUIDv7 IDs + crosswalk"]
+    D --> E["Generate dependency-ordered PG plan"]
+    E --> F["Dry-run on isolated copy"]
+    F --> G{"Counts, FK, serialization, media, API verify?"}
+    G -- No --> Z
+    G -- Yes --> H["Approval + backup checkpoint + write freeze"]
+    H --> I["Apply staged migration and rewrite known references"]
+    I --> J["Cutover validation and redirect testing"]
+    J --> K{"Accept?"}
+    K -- Yes --> L["Release + retain protected crosswalk"]
+    K -- No --> M["Restore original source / revert deployment"]
