@@ -22,6 +22,7 @@ Pressgres is a managed WordPress runtime and installer targeting PostgreSQL, nat
 14. [Open decisions and missing concerns](docs/14-open-decisions.md)
 15. [Diagrams index](diagrams/README.md), [Glossary](docs/15-glossary.md), [Sources](docs/16-sources.md)
 16. [Ten name candidates](docs/17-names.md)
+17. [Architecture decision records](docs/adr/README.md)
 
 ## Proposed repository top level
 
@@ -32,15 +33,22 @@ pressgres/
 ├── wordpress/{db-dropin,object-cache-dropin,mu-plugins,admin-plugin}/
 ├── patches/wordpress/<version>/ # managed UUID core patches
 ├── adapters/<plugin>/<version>/ # signed/versioned compatibility manifests
-├── migrations/{core,adapters}/
+├── migrations/{core,plugin}/
 ├── docker/                     # production-oriented build assets
 ├── .ddev/                      # developer experience, generated/validated
-├── tests/{unit,integration,e2e,fixtures,regression}/
+├── tests/{unit,integration,e2e,sql-corpus,compat,upgrade,faults}/
+├── fixtures/{legacy-mysql,uuid-postgres,plugins}/
 ├── tools/                      # scripts, schema generation, verification
-├── docs/ + diagrams/
+├── docs/{adr,runbooks,compatibility,api}/ + diagrams/
 ├── AGENTS.md + CONTRIBUTING.md + SECURITY.md
 └── .github/{workflows,ISSUE_TEMPLATE}/
 ```
+
+Full layout: [docs/02 — Architecture](docs/02-architecture.md#repo-structure-comprehensive).
+
+## Planning
+
+Work is tracked as Epics → Stories (GitHub issue types + sub-issues) on the [Pressgres Roadmap project](https://github.com/orgs/pressgres/projects/1), one repository milestone per roadmap phase (M0–M5). Task IDs in issue titles (e.g. `R-001`) match [docs/08 — Roadmap](docs/08-roadmap.md).
 
 **Naming:** Project working name *Pressgres*. CLI remains `wps` (WordPress Shell), separate from the public brand. Avoid assuming the name is legally or commercially available.
 

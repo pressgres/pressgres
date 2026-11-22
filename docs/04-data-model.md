@@ -37,7 +37,7 @@ CREATE TABLE wp_posts (
 CREATE INDEX wp_posts_author_idx ON wp_posts(post_author);
 ```
 
-**Identifier casing policy:** preserve `"ID"` where WordPress PHP expects `ID` and use explicit metadata mapping when result sets originate from PG; don't assume unquoted `id` will be returned as uppercase `ID`. Table name and column compatibility for each pinned WP version must be tested. See full illustrative files [old](../examples/sql/legacy-mysql.sql) and [new](../examples/sql/native-postgres.sql).
+**Identifier casing policy:** preserve `"ID"` where WordPress PHP expects `ID` and use explicit metadata mapping when result sets originate from PG; don't assume unquoted `id` will be returned as uppercase `ID`. The same applies to every mixed-case core column (e.g. `comment_ID`, `comment_post_ID`, `user_id` vs `ID`): PostgreSQL folds unquoted identifiers to lowercase, so the schema must quote them and the result mapper must restore WordPress casing. Table name and column compatibility for each pinned WP version must be tested. The sample adds `UNIQUE` on `user_login`; stock WordPress only has a non-unique index there, so this is a deliberate behavior divergence that needs an ADR before adoption. See full illustrative files [old](../examples/sql/legacy-mysql.sql) and [new](../examples/sql/native-postgres.sql).
 
 ## Identity mapping scope and hard cases
 

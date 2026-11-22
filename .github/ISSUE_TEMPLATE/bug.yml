@@ -1,0 +1,37 @@
+name: Bug
+description: Reproducible defect report (no secrets, no production dumps)
+type: Bug
+body:
+  - type: textarea
+    id: versions
+    attributes:
+      label: Exact version lockfile (redacted)
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce on a disposable environment
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+    validations:
+      required: true
+  - type: textarea
+    id: origin
+    attributes:
+      label: SQL query class / plugin origin (redacted)
+  - type: dropdown
+    id: integrity
+    attributes:
+      label: Data integrity impact
+      options: ["None", "Possible", "Confirmed data loss or corruption"]
+    validations:
+      required: true
+  - type: textarea
+    id: test
+    attributes:
+      label: Suggested regression test

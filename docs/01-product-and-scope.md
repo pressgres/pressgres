@@ -27,7 +27,7 @@ A repeatable installer and managed compatibility runtime so organizations can ru
 
 ## In scope (MVP -> 1.0)
 
-- `wps init`, `doctor`, `plan`, `install`, `verify`, `plugin scan/check`, `migration plan/apply`, `upgrade`, `backup/restore verify` (phased).
+- `wps init`, `doctor`, `plan install`, `install`, `verify`, `plugin scan/check/plan/install/activate`, `migrate plan/apply/verify`, `upgrade plan/apply`, `rollback`, `backup`/`restore`/`restore-test` (phased; see [CLI table](03-installer-cli.md)).
 - Managed WordPress release with UUID-string-safe core API/REST contracts.
 - PDO PostgreSQL database drop-in with parser-based MySQL compatibility for vetted statements.
 - Versioned native PostgreSQL schema and migration registry; schema drift detection.
@@ -47,6 +47,7 @@ A repeatable installer and managed compatibility runtime so organizations can ru
 
 ## Success metrics / release gates
 
+- Upstream WordPress core PHPUnit suite pass rate on the pinned stack is published per build and does not regress (primary objective compatibility metric).
 - 100% of supported core identity-bearing tables have UUID PK/FK contracts and referential tests.
 - 100% of targeted core CRUD/REST/editor flows in the published test suite pass on pinned stack.
 - 0 known silent coercions of UUIDs to integers in supported paths.
@@ -65,4 +66,4 @@ A repeatable installer and managed compatibility runtime so organizations can ru
 
 ## Decisions to record as ADRs
 
-ADR-001 managed core patchset vs fork; ADR-002 UUID only with nullable references; ADR-003 parser vendor/build; ADR-004 DDL staging model; ADR-005 Redis implementation; ADR-006 version support; ADR-007 name and licensing.
+The canonical ADR list and numbering live in [14 — Open decisions](14-open-decisions.md#pending-adrs-and-default-recommendation); ADR files go in `docs/adr/`.

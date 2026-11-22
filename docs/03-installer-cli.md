@@ -22,13 +22,14 @@
 | `wps install` | provision & initialize | M2 |
 | `wps verify` | runtime and identity integrity | M2 |
 | `wps plugin scan/check` | inspect ZIP, identify hazards | M3 |
-| `wps plugin install/activate` | gated deployment | M4 |
+| `wps plugin plan/install/activate` | gated deployment | M4 |
 | `wps migrate plan/apply/verify` | supported migration workflow | M4 |
 | `wps backup/restore/restore-test` | operator safety | M4 |
 | `wps upgrade plan/apply` | tested upgrades | M5 |
+| `wps rollback --checkpoint=<id>` | restore a recorded checkpoint when a valid restoration path exists | M5 |
 | `wps support bundle --redact` | debugging | M5 |
 
-Exit codes: 0 successful; 2 invalid usage/config; 3 unsupported version; 4 unreachable dependency; 5 security failure; 6 incompatible plugin/SQL; 7 migration failure; 8 verification failure; 9 partial application requires recovery; 10 lock contention. Structured JSON output with `--format=json`; `--no-interaction`; `--dry-run` on mutating operations.
+Exit codes: 0 successful; 1 unexpected internal error (bug; always includes correlation ID); 2 invalid usage/config; 3 unsupported version; 4 unreachable dependency; 5 security failure; 6 incompatible plugin/SQL; 7 migration failure; 8 verification failure; 9 partial application requires recovery; 10 lock contention. Structured JSON output with `--format=json`; `--no-interaction`; `--dry-run` on mutating operations.
 
 ## Preflight version and capability checks
 

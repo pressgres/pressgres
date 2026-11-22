@@ -10,7 +10,15 @@ This is a **dependency-based roadmap, not a date forecast**. Milestones require 
 - [ ] R-004 choose SQL parser license, grammar scope and performance approach (M).
 - [ ] R-005 choose WordPress patching mechanism and verify redistribution/licensing obligations (M).
 - [ ] R-006 implement threat model and proof-of-concept plugin sandbox (M).
-- [ ] R-007 record ADR-001..007 and go/no-go decision (S).
+- [ ] R-007 record ADR-001..011 and go/no-go decision (S).
+- [ ] R-008 user discovery: interview 5–10 PostgreSQL-standardized organizations, pick first persona (M).
+- [ ] R-009 baseline the upstream WordPress core PHPUnit suite against the PostgreSQL prototype; publish pass rate (M).
+- [ ] R-010 ADR: object cache backend, Redis vs Valkey licensing (S).
+- [ ] R-011 document the UUID-only rationale and requirements (why not dual IDs) (S).
+- [ ] R-012 audit block editor / JS packages / REST clients for numeric-ID assumptions (L).
+- [ ] R-013 estimate core patchset size and per-release rebase cost (M).
+- [ ] R-014 select the two initial plugin compatibility targets (S).
+- [ ] R-015 licensing and trademark clearance for name and repository LICENSE (M).
 
 **Exit:** demonstrable UUID insert/get across PHP + REST without truncation, and documented patch scope. **Hard stop** if viable managed patchset strategy not found.
 
@@ -23,19 +31,25 @@ This is a **dependency-based roadmap, not a date forecast**. Milestones require 
 - [ ] I-005 install plan/state machine, idempotent resume and advisory lock (L).
 - [ ] I-006 base Docker Compose and DDEV PostgreSQL + Redis profile (M).
 - [ ] I-007 CI gates, issue templates, CODEOWNERS and agents (S).
+- [ ] I-009 `wps version` and `--format=json` output contract (S).
+- [ ] I-010 CI: WordPress core PHPUnit suite on PostgreSQL with pass-rate trend (M).
+- [ ] I-011 CI matrix: required stack plus exploratory PHP 8.5 / PG 19 (M).
 
-**Exit:** deterministic no-write plan and reproducible local stack; invalid environment fails before mutation.
+**Exit:** deterministic no-write plan and reproducible local stack; invalid environment fails before mutation; core PHPUnit pass rate tracked in CI.
 
 ## M2 — Core PostgreSQL + native UUIDv7 alpha
 
 - [ ] D-001 implement PHP PDO PostgreSQL driver, result shape mapping (L).
 - [ ] D-002 implement `$wpdb` facade, `insert_id` UUID-aware contract (L).
 - [ ] D-003 schema registry and PG native core schema migrations (L).
+- [ ] D-004 query source attribution and unsupported-query logging (M).
 - [ ] U-001 managed core patchset ID casts and type constraints (L).
 - [ ] U-002 adapt core REST schemas/routes and editor consumers (L).
 - [ ] U-003 adapt users/comments/terms/meta/relations and null sentinel behavior (L).
 - [ ] U-004 UUID integrity and cache-key test corpus (M).
+- [ ] U-005 patchset tooling: patch series, hash manifest, rebase workflow (M).
 - [ ] I-008 clean install, admin bootstrap, verification CLI (L).
+- [ ] I-012 `wps verify` runtime and identity integrity checks (M).
 
 **Exit:** passing WP core CRUD, login, basic editor and REST flows; all supported core PKs UUIDv7; no silent conversion.
 
@@ -47,7 +61,10 @@ This is a **dependency-based roadmap, not a date forecast**. Milestones require 
 - [ ] Q-004 semantic differential SQL corpus MySQL vs PG (L).
 - [ ] C-001 vetted object-cache integration and namespace isolation (M).
 - [ ] C-002 Redis failure, invalidation and concurrency tests (M).
-- [ ] S-001 enforce roles, TLS, secrets, immutable release (M).
+- [ ] S-001 enforce migrator vs runtime role separation (M).
+- [ ] S-002 TLS `verify-full` for PostgreSQL and cache (M).
+- [ ] S-003 secret references and log redaction (M).
+- [ ] S-004 immutable release layout and hardened wp-config defaults (M).
 
 **Exit:** no unsupported unclassified SQL in pinned core test suite; Redis fallback safe; security negative tests pass.
 
@@ -61,6 +78,9 @@ This is a **dependency-based roadmap, not a date forecast**. Milestones require 
 - [ ] X-001 selected **two** low-complexity plugins end-to-end, then expand (L).
 - [ ] X-002 controlled MySQL import pilot with IDs crosswalk for **core-only** content (L).
 - [ ] X-003 plugin payload migration only by typed adapters; unknowns blocked (L).
+- [ ] P-006 public compatibility list generated from CI plugin runs (M).
+- [ ] M-001 `wps migrate plan/apply/verify` CLI (L).
+- [ ] B-001 `wps backup` / `restore` / `restore-test` (L).
 
 **Exit:** two named plugins pass defined functionality/upgrade/uninstall tests; unsupported plugins blocked; core-only migration reconciles.
 
@@ -73,6 +93,7 @@ This is a **dependency-based roadmap, not a date forecast**. Milestones require 
 - [ ] O-005 reproducible builds, SBOM and artifact provenance (M).
 - [ ] O-006 document incident response, support policy, CVE process (M).
 - [ ] O-007 production deployment guide and migration disclaimers (M).
+- [ ] O-008 `wps support bundle --redact` (M).
 
 **Exit:** release checklist signed by maintainers, successful fresh install + staging upgrade + recovery drill; no high/critical known data-loss issues.
 
@@ -81,5 +102,7 @@ This is a **dependency-based roadmap, not a date forecast**. Milestones require 
 M0 ID audit -> core patch strategy -> M2 UUID core correctness -> M3 SQL semantics -> M4 plugin compatibility -> M5 stable release. Installer skeleton, DDEV and security scaffolding can begin in parallel after M0. Do **not** build admin redesign until core correctness is stable.
 
 ## Deliverable tracking
+
+Tracked on the [Pressgres Roadmap project](https://github.com/orgs/pressgres/projects/1): each milestone section maps to one or more Epics, each task ID to a Story sub-issue; dependencies use GitHub "blocked by" links.
 
 Every task: GitHub issue with owner, phase, dependencies, acceptance tests, security impact, PR, ADR link when relevant and evidence artifact. Milestone status is determined from CI and review evidence, not percentage of boxes checked.
