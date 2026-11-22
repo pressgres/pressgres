@@ -1,0 +1,137 @@
+file,line,function,statement_kind,tables,identity_sensitive,notes
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,56,wp_get_db_schema,CREATE TABLE,termmeta,yes,single-site definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,65,wp_get_db_schema,CREATE TABLE,terms,yes,single-site definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,74,wp_get_db_schema,CREATE TABLE,term_taxonomy,yes,single-site definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,85,wp_get_db_schema,CREATE TABLE,term_relationships,yes,single-site definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,92,wp_get_db_schema,CREATE TABLE,commentmeta,yes,single-site definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,101,wp_get_db_schema,CREATE TABLE,comments,yes,single-site definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,124,wp_get_db_schema,CREATE TABLE,links,yes,single-site definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,141,wp_get_db_schema,CREATE TABLE,options,yes,single-site definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,150,wp_get_db_schema,CREATE TABLE,postmeta,yes,single-site definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,159,wp_get_db_schema,CREATE TABLE,posts,yes,single-site definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,192,wp_get_db_schema,CREATE TABLE,users,yes,single-site definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,210,wp_get_db_schema,CREATE TABLE,users,yes,multisite definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,230,wp_get_db_schema,CREATE TABLE,usermeta,yes,single-site definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,248,wp_get_db_schema,CREATE TABLE,blogs,yes,multisite definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,265,wp_get_db_schema,CREATE TABLE,blogmeta,yes,multisite definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,274,wp_get_db_schema,CREATE TABLE,registration_log,yes,multisite definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,283,wp_get_db_schema,CREATE TABLE,site,yes,multisite definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,290,wp_get_db_schema,CREATE TABLE,sitemeta,yes,multisite definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,299,wp_get_db_schema,CREATE TABLE,signups,yes,multisite definition; see schema column inventory or multisite section
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,591,populate_options,SELECT,options,no,SELECT option_name FROM options WHERE option_name IN (default/override names).
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,616,populate_options,INSERT,options,yes,"Multi-row INSERT into (option_name, option_value, autoload); omits generated option_id; some named values contain numeric entity references."
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,621,populate_options,UPDATE or UPSERT,options,no,Update home through option API if blank.
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,704,populate_options,DELETE,options,no,Delete obsolete names using delete_option().
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,708,populate_options,DELETE,options,no,DELETE WHERE option_name REGEXP legacy Magpie key pattern.
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,711,populate_options,DELETE,options,no,Calls delete_expired_transients(true); MySQL multi-table DELETE of key/timeout pairs.
+wordpress-develop-7.1.5/src/wp-admin/includes/schema.php,738,populate_roles,UPDATE or UPSERT,options,no,Persist role definitions as one autoloaded serialized option.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,79,wp_install,CALL,options,yes,"Calls populate_options, then populate_roles; seeds current db_version."
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,106,wp_install,SELECT,users,no,Look up existing user by login through username_exists().
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,114,wp_install,INSERT,users; usermeta,yes,wp_create_user and default_password_nag; password-provided branch also creates the user.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,128,wp_install,META WRITE,usermeta,yes,WP_User::set_role updates capabilities and user level using generated user ID.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,132,wp_install,UPDATE,users,yes,Update new user URL by ID.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,188,wp_install_defaults,INSERT,terms,yes,Explicit term_id=1; term_group=0 is numeric.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,197,wp_install_defaults,INSERT,term_taxonomy,yes,Uses term_id=1 and parent=0; reads insert_id at line 207.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,239,wp_install_defaults,INSERT,posts,yes,First post; omits PK; uses generated admin ID and a numeric GUID suffix.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,264,wp_install_defaults,INSERT,term_relationships,yes,Connects object_id=1 with generated term_taxonomy_id.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,293,wp_install_defaults,INSERT,comments,yes,First comment with comment_post_ID=1.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,343,wp_install_defaults,INSERT,posts,yes,"Sample page, assumed ID 2."
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,364,wp_install_defaults,INSERT,postmeta,yes,Template metadata with post_id=2.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,388,wp_install_defaults,INSERT,posts,yes,"Optional privacy page, assumed ID 3."
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,410,wp_install_defaults,INSERT,postmeta,yes,Privacy page template metadata with post_id=3.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,418,wp_install_defaults,UPDATE or UPSERT,options,yes,Store hardcoded privacy page ID 3.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,451,wp_install_defaults,META WRITE,usermeta,yes,Set show_welcome_panel for the admin ID; value itself is numeric.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,689,wp_upgrade,DELETE,options,no,Clear core block CSS transient via delete_transient().
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,897,upgrade_all,UPDATE or UPSERT,options,no,Persist db_version and db_upgraded using option APIs.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,1108,upgrade_130,DROP TABLE,optionvalues,yes,DROP TABLE IF EXISTS <prefix>optionvalues
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,1109,upgrade_130,DROP TABLE,optiontypes,yes,DROP TABLE IF EXISTS <prefix>optiontypes
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,1110,upgrade_130,DROP TABLE,optiongroups,yes,DROP TABLE IF EXISTS <prefix>optiongroups
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,1111,upgrade_130,DROP TABLE,optiongroup_options,yes,DROP TABLE IF EXISTS <prefix>optiongroup_options
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,1215,upgrade_160,ALTER TABLE,users,no,ALTER TABLE $wpdb->users DROP $old
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,1516,upgrade_230,DROP TABLE,linkcategories,yes,DROP TABLE IF EXISTS <prefix>linkcategories
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,1544,upgrade_230_options_table,ALTER TABLE,options,no,ALTER TABLE $wpdb->options DROP $old
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,1559,upgrade_230_old_tables,DROP TABLE,categories,yes,DROP TABLE IF EXISTS <prefix>categories
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,1560,upgrade_230_old_tables,DROP TABLE,link2cat,yes,DROP TABLE IF EXISTS <prefix>link2cat
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,1561,upgrade_230_old_tables,DROP TABLE,post2cat,yes,DROP TABLE IF EXISTS <prefix>post2cat
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,1850,upgrade_340,ALTER TABLE,options,yes,ALTER TABLE $wpdb->options DROP COLUMN blog_id
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,1856,upgrade_340,ALTER TABLE,comments,no,ALTER TABLE $wpdb->comments DROP INDEX comment_approved
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2104,upgrade_440,ALTER TABLE,options,no,ALTER TABLE {$wpdb->options} MODIFY option_name VARCHAR(191)
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2271,upgrade_560,ALTER TABLE,posts,yes,ALTER TABLE $wpdb->posts DROP COLUMN `post_category`
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2326,upgrade_590,UPDATE or UPSERT,options,no,Boundary prior to stored revision 51917: filter false cron entries and update cron option.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2343,upgrade_600,SELECT and option write,users; options,no,COUNT(ID) and persist user_count; requires correct ID casing but no numeric values.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2363,upgrade_630,DELETE and UPSERT,options,no,Recreate existing can_compress_scripts as autoloaded on single site.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2383,upgrade_640,UPDATE or UPSERT,options,no,Set wp_attachment_pages_enabled; remove old cron hook via option APIs.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2411,upgrade_650,SELECT,options,no,"Select autoload=yes theme_mods_ names, excluding active theme with escaped LIKE pattern."
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2418,upgrade_650,UPDATE,options,no,Autoload helper reads matching names and sets autoload=off.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2449,upgrade_670,UPDATE,options,no,Autoload helper reads named options and sets autoload=off.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2484,upgrade_682,UPDATE or UPSERT,options,no,"Normalize Ping-O-Matic and Twingly URLs to HTTPS, persist ping_sites."
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2502,upgrade_700,UPDATE,usermeta,no,UPDATE SET meta_value='modern' WHERE meta_key='admin_color' AND meta_value='fresh'.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2610,upgrade_network,ALTER TABLE,usermeta,no,"ALTER TABLE $wpdb->usermeta DROP INDEX meta_key, ADD INDEX meta_key(meta_key(191))"
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2611,upgrade_network,ALTER TABLE,site,no,"ALTER TABLE $wpdb->site DROP INDEX domain, ADD INDEX domain(domain(140),path(51))"
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2612,upgrade_network,ALTER TABLE,sitemeta,no,"ALTER TABLE $wpdb->sitemeta DROP INDEX meta_key, ADD INDEX meta_key(meta_key(191))"
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2613,upgrade_network,ALTER TABLE,signups,no,"ALTER TABLE $wpdb->signups DROP INDEX domain_path, ADD INDEX domain_path(domain(140),path(51))"
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2641,upgrade_network,ALTER TABLE,signups,no,"ALTER TABLE $wpdb->signups DROP INDEX domain_path, ADD INDEX domain_path(domain(140),path(51))"
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2687,maybe_create_table,SHOW TABLES,$table_name,no,"SHOW TABLES LIKE with escaped pattern, then exact comparison before and after caller DDL."
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2694,maybe_create_table,CALLER DDL,$table_name,context,Executes $create_ddl on a miss.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2720,drop_index,ALTER TABLE,$table,context,ALTER TABLE `$table` DROP INDEX `$index`
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2724,drop_index,ALTER TABLE,$table,context,ALTER TABLE `$table` DROP INDEX `{$index}_$i`
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2747,add_clean_index,ALTER TABLE,$table,context,ALTER TABLE `$table` ADD INDEX ( `$index` )
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2767,maybe_add_column,DESCRIBE,$table_name,no,DESC first column and exact name comparison before and after caller DDL.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2774,maybe_add_column,CALLER DDL,$table_name,context,Executes $create_ddl on a miss.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2799,maybe_convert_table_to_utf8mb4,SHOW FULL COLUMNS,$table,no,Checks Collation for each column.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2815,maybe_convert_table_to_utf8mb4,SHOW TABLE STATUS,$table,no,Checks table Collation before native charset conversion.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2826,maybe_convert_table_to_utf8mb4,ALTER TABLE,$table,context,ALTER TABLE $table CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,2876,__get_option,SELECT,options,no,Read option_value by option_name; used by db_version checks.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3027,dbDelta,DESCRIBE,$table,no,Missing or uninspectable table leaves CREATE queued.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3237,dbDelta,ALTER TABLE,$table,context,CHANGE COLUMN current-name full-desired-column-definition; generated when type differs.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3248,dbDelta,ALTER TABLE,$table,context,ALTER COLUMN current-name SET DEFAULT 'desired-value'; generated for differing quoted defaults.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3264,dbDelta,ALTER TABLE,$table,context,ADD COLUMN desired-field-definition.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3270,dbDelta,SHOW INDEX,$table,no,Index metadata matching ignores subparts.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3341,dbDelta,ALTER TABLE,$table,context,ADD normalized-index-definition.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3353,dbDelta,DYNAMIC SQL,caller or schema tables,context,"Executes retained CREATE TABLE / CREATE DATABASE, generated ALTER, accepted INSERT and UPDATE plus hook-supplied statements."
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3700,maybe_disable_automattic_widgets,UPDATE or UPSERT,options,no,Remove legacy widgets.php entry from active_plugins if present.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3717,maybe_disable_link_manager,SELECT,links,no,SELECT link_id FROM links LIMIT 1; tests row presence via truthiness.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3718,maybe_disable_link_manager,UPDATE or UPSERT,options,no,Disable link manager if enabled and no links exist.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3736,pre_schema_upgrade,DELETE,options,yes,Historical MySQL joined delete retains greatest numeric option_id per option_name below revision 11557.
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3739,pre_schema_upgrade,ALTER TABLE,options,yes,"ALTER TABLE $wpdb->options DROP PRIMARY KEY, ADD PRIMARY KEY(option_id)"
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3742,pre_schema_upgrade,ALTER TABLE,options,no,ALTER TABLE $wpdb->options DROP INDEX option_name
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3751,pre_schema_upgrade,ALTER TABLE,signups,yes,ALTER TABLE $wpdb->signups ADD signup_id BIGINT(20) NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3752,pre_schema_upgrade,ALTER TABLE,signups,no,ALTER TABLE $wpdb->signups DROP INDEX domain
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3757,pre_schema_upgrade,ALTER TABLE,blogs,no,ALTER TABLE $wpdb->blogs CHANGE COLUMN archived archived varchar(1) NOT NULL default '0'
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3758,pre_schema_upgrade,ALTER TABLE,blogs,no,ALTER TABLE $wpdb->blogs CHANGE COLUMN archived archived tinyint(2) NOT NULL default 0
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3764,pre_schema_upgrade,ALTER TABLE,blogs,yes,ALTER TABLE $wpdb->blogs MODIFY blog_id bigint(20) unsigned NOT NULL auto_increment
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3765,pre_schema_upgrade,ALTER TABLE,blogs,yes,ALTER TABLE $wpdb->blogs MODIFY site_id bigint(20) unsigned NOT NULL default 0
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3766,pre_schema_upgrade,ALTER TABLE,blogmeta,yes,ALTER TABLE $wpdb->blogmeta MODIFY blog_id bigint(20) unsigned NOT NULL default 0
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3767,pre_schema_upgrade,ALTER TABLE,registration_log,yes,ALTER TABLE $wpdb->registration_log MODIFY ID bigint(20) unsigned NOT NULL auto_increment
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3768,pre_schema_upgrade,ALTER TABLE,registration_log,yes,ALTER TABLE $wpdb->registration_log MODIFY blog_id bigint(20) unsigned NOT NULL default 0
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3769,pre_schema_upgrade,ALTER TABLE,site,yes,ALTER TABLE $wpdb->site MODIFY id bigint(20) unsigned NOT NULL auto_increment
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3770,pre_schema_upgrade,ALTER TABLE,sitemeta,yes,ALTER TABLE $wpdb->sitemeta MODIFY meta_id bigint(20) unsigned NOT NULL auto_increment
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3771,pre_schema_upgrade,ALTER TABLE,sitemeta,yes,ALTER TABLE $wpdb->sitemeta MODIFY site_id bigint(20) unsigned NOT NULL default 0
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3772,pre_schema_upgrade,ALTER TABLE,signups,yes,ALTER TABLE $wpdb->signups MODIFY signup_id bigint(20) unsigned NOT NULL auto_increment
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3779,pre_schema_upgrade,ALTER TABLE,usermeta,no,"ALTER TABLE $wpdb->usermeta DROP INDEX meta_key, ADD INDEX meta_key(meta_key(191))"
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3781,pre_schema_upgrade,ALTER TABLE,terms,no,"ALTER TABLE $wpdb->terms DROP INDEX slug, ADD INDEX slug(slug(191))"
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3782,pre_schema_upgrade,ALTER TABLE,terms,no,"ALTER TABLE $wpdb->terms DROP INDEX name, ADD INDEX name(name(191))"
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3783,pre_schema_upgrade,ALTER TABLE,commentmeta,no,"ALTER TABLE $wpdb->commentmeta DROP INDEX meta_key, ADD INDEX meta_key(meta_key(191))"
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3784,pre_schema_upgrade,ALTER TABLE,postmeta,no,"ALTER TABLE $wpdb->postmeta DROP INDEX meta_key, ADD INDEX meta_key(meta_key(191))"
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3785,pre_schema_upgrade,ALTER TABLE,posts,no,"ALTER TABLE $wpdb->posts DROP INDEX post_name, ADD INDEX post_name(post_name(191))"
+wordpress-develop-7.1.5/src/wp-admin/includes/upgrade.php,3792,pre_schema_upgrade,ALTER TABLE,termmeta,no,"ALTER TABLE $wpdb->termmeta DROP INDEX meta_key, ADD INDEX meta_key(meta_key(191))"
+wordpress-develop-7.1.5/src/wp-admin/install-helper.php,57,maybe_create_table,SHOW TABLES,$table_name,no,Legacy variant enumerates SHOW TABLES before and after caller DDL.
+wordpress-develop-7.1.5/src/wp-admin/install-helper.php,65,maybe_create_table,CALLER DDL,$table_name,context,Conditional legacy definition; executes $create_ddl on a miss.
+wordpress-develop-7.1.5/src/wp-admin/install-helper.php,95,maybe_add_column,DESCRIBE,$table_name,no,Reads DESC first column before and after caller DDL.
+wordpress-develop-7.1.5/src/wp-admin/install-helper.php,103,maybe_add_column,CALLER DDL,$table_name,context,Conditional legacy definition; executes $create_ddl on a miss.
+wordpress-develop-7.1.5/src/wp-admin/install-helper.php,133,maybe_drop_column,DESCRIBE,$table_name,no,Reads DESC first column before and after caller DDL.
+wordpress-develop-7.1.5/src/wp-admin/install-helper.php,138,maybe_drop_column,CALLER DDL,$table_name,context,Executes $drop_ddl when column exists.
+wordpress-develop-7.1.5/src/wp-admin/install-helper.php,189,check_column,DESCRIBE,$table_name,no,"Checks Field, Type, Null, Key, Default and Extra against caller criteria."
+wordpress-develop-7.1.5/src/wp-admin/maint/repair.php,111,(file scope),CHECK TABLE,core and filtered tables,no,MySQL catalog/maintenance surface.
+wordpress-develop-7.1.5/src/wp-admin/maint/repair.php,121,(file scope),REPAIR TABLE,core and filtered tables,no,MySQL maintenance surface after failed check.
+wordpress-develop-7.1.5/src/wp-admin/maint/repair.php,143,(file scope),OPTIMIZE TABLE,core and filtered tables,no,MySQL maintenance surface when enabled.
+wordpress-develop-7.1.5/src/wp-includes/SimplePie/src/Cache/MySQL.php,90,__construct,CREATE TABLE,cache_data,no,"Bundled dependency, direct PDO MySQL path outside WordPress core schema."
+wordpress-develop-7.1.5/src/wp-includes/SimplePie/src/Cache/MySQL.php,99,__construct,CREATE TABLE,items,no,"Bundled dependency, direct PDO MySQL path outside WordPress core schema."
+wordpress-develop-7.1.5/src/wp-includes/ms-site.php,835,wp_uninitialize_site,DROP TABLE,$table,context,DROP TABLE IF EXISTS `$table`
+wordpress-develop-7.1.5/src/wp-includes/option.php,444,wp_set_option_autoload_values,SELECT,options,no,SELECT option_name by autoload != target and option_name in list.
+wordpress-develop-7.1.5/src/wp-includes/option.php,463,wp_set_option_autoload_values,UPDATE,options,no,UPDATE SET autoload=target WHERE option_name IN (...).
+wordpress-develop-7.1.5/src/wp-includes/option.php,963,update_option,UPDATE,options,no,Update option_value and optional autoload by option_name; existing-value checks before write.
+wordpress-develop-7.1.5/src/wp-includes/option.php,1142,add_option,UPSERT,options,no,MySQL INSERT ON DUPLICATE KEY UPDATE by unique option_name; generated PK not read by add_option.
+wordpress-develop-7.1.5/src/wp-includes/option.php,1229,delete_option,DELETE,options,no,Delete by option_name; lookup/cache updates around the write.
+wordpress-develop-7.1.5/src/wp-includes/user.php,1547,wp_update_user_counts,SELECT,users,no,SELECT COUNT(ID) as c FROM users.
+wordpress-develop-7.1.5/src/wp-includes/user.php,1554,wp_update_user_counts,UPDATE or UPSERT,options,no,Single-site user_count through update_network_option.
