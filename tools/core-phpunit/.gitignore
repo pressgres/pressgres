@@ -1,0 +1,4 @@
+# Raw run output (JUnit XML, logs) — summaries are copied to docs/research/data/.
+results/
+config/empty/
+__pycache__/

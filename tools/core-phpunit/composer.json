@@ -1,0 +1,12 @@
+{
+	"name": "pressgres/r009-core-phpunit-tools",
+	"description": "Pinned PHPUnit tooling for running the wordpress-develop 7.1.5 PHPUnit suite (R-009).",
+	"license": "GPL-2.0-or-later",
+	"require": {
+		"phpunit/phpunit": "9.6.39",
+		"yoast/phpunit-polyfills": "1.1.5"
+	},
+	"config": {
+		"sort-packages": true
+	}
+}

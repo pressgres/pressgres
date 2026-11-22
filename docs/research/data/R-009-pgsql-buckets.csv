@@ -1,0 +1,7 @@
+run,bucket,direct_count,class_inferred_count
+pgsql-C,uuid-identity,1761,4075
+pgsql-C,sql-dialect,62,102
+pgsql-C,schema/ddl,267,939
+pgsql-C,harness/environment,116,133
+pgsql-C,unknown,3875,832
+pgsql-C,total,6081,6081

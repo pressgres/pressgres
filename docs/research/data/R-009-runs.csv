@@ -1,0 +1,5 @@
+label,variant,db,started_utc,wall_seconds,phpunit_time,console_tests,junit_tests,pass,failure,error,skipped,junit_output_errors,pass_rate_pct,comparable_pass_rate_pct,notes
+mysql-control,control,MySQL 8.4.13,2026-11-22T23:06:50Z,335,05:32,30900,30900,30868,1,0,31,0,99.90,100.00,"final control; only failure = unbuilt JS asset (environmental)"
+pgsql-A,"A: prototype db.php verbatim, stock installer",PostgreSQL 18.6,2026-11-22T22:24:53Z,1,n/a,0,0,0,0,0,0,0,0.00,0.00,"tests/phpunit/includes/install.php exited 255 in wp_install() -> wp_insert_user(); no test executed"
+pgsql-B,"B: prototype + harness wrapper + pre-created schema, full suite",PostgreSQL 18.6,2026-11-22T22:42:29Z,838,13:50,30907,30461,637,4103,25221,500,21635,2.09,2.07,"one schema test leaks $wpdb->options='testprefix_options' into all later tests"
+pgsql-C,"C: as B, excluding Tests_Admin_IncludesSchema",PostgreSQL 18.6,2026-11-22T23:00:33Z,375,06:11,30898,30452,23928,3105,2976,443,762,78.58,77.47,"headline PostgreSQL baseline"
