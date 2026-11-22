@@ -1,0 +1,47 @@
+R003_NO_PATCH=1: NOT applying core patches (baseline run)
+prepared /Users/michael/Developer/Wordpress/pressgres/worktrees/R-003/prototypes/r-003/build/wordpress
+
+PostgreSQL 18.6 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit|7
+[setup] roles                        ["administrator","editor","author","contributor","subscriber"]
+[setup] admin user ID                1
+[setup] wp_insert_term FAILED        'Could not insert term taxonomy into the database.'
+
+setup failed (see build/logs/wp-debug.log)
+== query log summary (/r003/build/logs/query-log.jsonl) ==
+phase         total     ok  error  unsupported
+setup           110     81     16           13
+
+Distinct statement fingerprints (excluding adapter-internal catalog queries):
+phase         distinct      raw SQL rewritten     insert/update/delete()  failing
+setup               19                      4                          5        5
+happy path (php-api + rest, de-duplicated): 0 distinct fingerprints, 0 with a raw-SQL rewrite rule, 0 via insert/update/delete()
+all phases: 19 distinct fingerprints
+
+Rules applied (number of distinct fingerprints):
+  backtick-to-double-quote                   1
+  insert-bound-params                        2
+  insert-returning-pk                        3
+  options-on-duplicate-key-to-on-conflict    1
+  quote-mixed-case-column                    3
+  update-bound-params                        1
+
+fingerprint CSV: /r003/build/logs/query-fingerprints.csv
+
+Failing fingerprints:
+  [setup] SELECT * FROM wp_users WHERE ID = ? LIMIT ?
+      -> SQLSTATE[22P02]: Invalid text representation: 7 ERROR:  invalid input syntax for type uuid: "1"
+LINE 1: SELECT * FROM wp_users WHERE "ID" = '1' LIMIT 1
+                                            ^
+  [setup] INSERT INTO wp_usermeta (user_id, meta_key, meta_value) VALUES (...)
+      -> non-UUID value for uuid column wp_usermeta.user_id: int(1)
+  [setup] SELECT t.term_id FROM wp_terms AS t INNER JOIN wp_term_taxonomy AS tt ON t.term_id = tt.term_id WHERE tt.taxonomy IN (?) AND t.name IN (?) AND tt.parent = ? ORDER BY t.name ASC
+      -> SQLSTATE[22P02]: Invalid text representation: 7 ERROR:  invalid input syntax for type uuid: "0"
+LINE 3: ...tegory') AND t.name IN ('Uncategorized') AND tt.parent = '0'
+                                                                    ^
+  [setup] SELECT tt.term_taxonomy_id FROM wp_term_taxonomy AS tt INNER JOIN wp_terms AS t ON tt.term_id = t.term_id WHERE tt.taxonomy = ? AND t.term_id = ?
+      -> SQLSTATE[42883]: Undefined function: 7 ERROR:  operator does not exist: uuid = integer
+LINE 1: ...= t.term_id WHERE tt.taxonomy = 'category' AND t.term_id = 1
+                                                                    ^
+HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+  [setup] INSERT INTO wp_term_taxonomy (term_id, taxonomy, description, parent, count) VALUES (...)
+      -> non-UUID value for uuid column wp_term_taxonomy.term_id: int(1)

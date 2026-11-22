@@ -1,0 +1,58 @@
+# R-003 prototype stack. Throwaway; see README.md.
+# Project name is fixed so parallel stacks (e.g. R-009) do not collide.
+name: pressgres-r003
+
+x-php-env: &php-env
+  PG_HOST: db
+  PG_PORT: "5432"
+  PG_DATABASE: pressgres
+  PG_USER: pressgres
+  PG_PASSWORD: pressgres-r003-not-a-secret
+  WP_HOME: http://localhost:${R003_WEB_PORT:-58080}
+  PRESSGRES_QUERY_LOG: /r003/build/logs/query-log.jsonl
+
+services:
+  db:
+    image: postgres:18.6-alpine
+    environment:
+      POSTGRES_DB: pressgres
+      POSTGRES_USER: pressgres
+      POSTGRES_PASSWORD: pressgres-r003-not-a-secret
+    ports:
+      - "${R003_PG_PORT:-55433}:5432"
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pressgres -d pressgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  php:
+    build: ./docker/php
+    image: pressgres-r003-php:8.4.27
+    environment:
+      <<: *php-env
+      PRESSGRES_PHASE: cli
+    volumes:
+      - ./:/r003
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["php"]
+    profiles: ["tools"]
+
+  web:
+    image: pressgres-r003-php:8.4.27
+    build: ./docker/php
+    environment:
+      <<: *php-env
+      PRESSGRES_PHASE: rest
+    volumes:
+      - ./:/r003
+    ports:
+      - "${R003_WEB_PORT:-58080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["php", "-S", "0.0.0.0:8080", "-t", "/r003/build/wordpress"]

@@ -1,0 +1,663 @@
+--- wordpress-pristine/wp-includes/class-wp-post.php
++++ wordpress/wp-includes/class-wp-post.php
+@@ -278,22 +278,21 @@
+ 	public static function get_instance( $post_id ) {
+ 		global $wpdb;
+ 
+-		$post_id = (int) $post_id;
+-		if ( $post_id <= 0 ) {
++		if ( ! wp_is_uuid( $post_id ) ) {
+ 			return false;
+ 		}
+ 
+ 		$_post = wp_cache_get( $post_id, 'posts' );
+ 
+ 		if ( ! ( $_post instanceof stdClass ) && ! ( $_post instanceof WP_Post ) ) {
+-			$_post = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->posts WHERE ID = %d LIMIT 1", $post_id ) );
++			$_post = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $wpdb->posts WHERE ID = %s LIMIT 1", $post_id ) );
+ 
+ 			if ( ! $_post ) {
+ 				return false;
+ 			}
+ 
+ 			$_post = sanitize_post( $_post, 'raw' );
+-			wp_cache_add( (int) $_post->ID, $_post, 'posts' );
++			wp_cache_add( $_post->ID, $_post, 'posts' );
+ 		} elseif ( empty( $_post->filter ) || 'raw' !== $_post->filter ) {
+ 			$_post = sanitize_post( $_post, 'raw' );
+ 		}
+--- wordpress-pristine/wp-includes/class-wp-query.php
++++ wordpress/wp-includes/class-wp-query.php
+@@ -2257,12 +2257,15 @@
+ 			$where   .= " AND {$wpdb->posts}.ID IN ($post__in)";
+ 		} elseif ( $query_vars['post__not_in'] ) {
+ 			sort( $query_vars['post__not_in'] );
+-			$post__not_in = implode( ',', array_map( 'absint', $query_vars['post__not_in'] ) );
++			$post__not_in = pressgres_sql_id_list( $query_vars['post__not_in'] );
+ 			$where       .= " AND {$wpdb->posts}.ID NOT IN ($post__not_in)";
+ 		}
+ 
+-		if ( is_numeric( $query_vars['post_parent'] ) ) {
+-			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_parent = %d ", $query_vars['post_parent'] );
++		if ( wp_is_uuid( $query_vars['post_parent'] ) ) {
++			$where .= $wpdb->prepare( " AND {$wpdb->posts}.post_parent = %s ", $query_vars['post_parent'] );
++		} elseif ( is_numeric( $query_vars['post_parent'] ) ) {
++			// Pressgres R-003: legacy 0 = no parent (NULL); any other number cannot match a UUID.
++			$where .= ( 0 == $query_vars['post_parent'] ) ? " AND {$wpdb->posts}.post_parent IS NULL " : ' AND 1=0 ';
+ 		} elseif ( $query_vars['post_parent__in'] ) {
+ 			// Duplicate array before sorting to allow for the orderby clause.
+ 			$post_parent__in_for_where = $query_vars['post_parent__in'];
+--- wordpress-pristine/wp-includes/class-wp-term-query.php
++++ wordpress/wp-includes/class-wp-term-query.php
+@@ -473,7 +473,7 @@
+ 		if ( ! empty( $include ) ) {
+ 			$exclude      = '';
+ 			$exclude_tree = '';
+-			$inclusions   = implode( ',', wp_parse_id_list( $include ) );
++			$inclusions   = pressgres_sql_id_list( $include );
+ 
+ 			$this->sql_clauses['where']['inclusions'] = 't.term_id IN ( ' . $inclusions . ' )';
+ 		}
+@@ -593,11 +593,11 @@
+ 		if ( '' === $args['object_ids'] ) {
+ 			$args['object_ids'] = array();
+ 		} else {
+-			$args['object_ids'] = array_map( 'intval', (array) $args['object_ids'] );
++			$args['object_ids'] = (array) $args['object_ids'];
+ 		}
+ 
+ 		if ( ! empty( $args['object_ids'] ) ) {
+-			$object_ids = implode( ', ', $args['object_ids'] );
++			$object_ids = pressgres_sql_id_list( $args['object_ids'] );
+ 
+ 			$this->sql_clauses['where']['object_ids'] = "tr.object_id IN ($object_ids)";
+ 		}
+@@ -611,8 +611,7 @@
+ 		}
+ 
+ 		if ( '' !== $parent ) {
+-			$parent                               = (int) $parent;
+-			$this->sql_clauses['where']['parent'] = "tt.parent = '$parent'";
++			$this->sql_clauses['where']['parent'] = wp_is_uuid( $parent ) ? "tt.parent = '$parent'" : 'tt.parent IS NULL';
+ 		}
+ 
+ 		$hierarchical = $args['hierarchical'];
+@@ -741,7 +740,10 @@
+ 			$where = "WHERE $where";
+ 		}
+ 
+-		$this->sql_clauses['select']  = "SELECT $distinct $fields";
++		// Pressgres R-003: PostgreSQL requires ORDER BY expressions to appear in a SELECT DISTINCT list.
++		$pg_order_expr                = trim( (string) preg_replace( '/^\s*ORDER BY\s+/i', '', $orderby ) );
++		$pg_extra_select              = ( $distinct && $pg_order_expr && ! str_contains( $fields, '*' ) && ! in_array( $pg_order_expr, array_map( 'trim', explode( ',', $fields ) ), true ) ) ? ", $pg_order_expr" : '';
++		$this->sql_clauses['select']  = "SELECT $distinct $fields$pg_extra_select";
+ 		$this->sql_clauses['from']    = "FROM $wpdb->terms AS t $join";
+ 		$this->sql_clauses['orderby'] = $orderby ? "$orderby $order" : '';
+ 		$this->sql_clauses['limits']  = $limits;
+@@ -984,11 +986,11 @@
+ 			}
+ 		} elseif ( 'ids' === $_fields ) {
+ 			foreach ( $term_objects as $term ) {
+-				$_terms[] = (int) $term->term_id;
++				$_terms[] = $term->term_id;
+ 			}
+ 		} elseif ( 'tt_ids' === $_fields ) {
+ 			foreach ( $term_objects as $term ) {
+-				$_terms[] = (int) $term->term_taxonomy_id;
++				$_terms[] = $term->term_taxonomy_id;
+ 			}
+ 		} elseif ( 'names' === $_fields ) {
+ 			foreach ( $term_objects as $term ) {
+--- wordpress-pristine/wp-includes/class-wp-term.php
++++ wordpress/wp-includes/class-wp-term.php
+@@ -116,8 +116,7 @@
+ 	public static function get_instance( $term_id, $taxonomy = null ) {
+ 		global $wpdb;
+ 
+-		$term_id = (int) $term_id;
+-		if ( ! $term_id ) {
++		if ( ! wp_is_uuid( $term_id ) ) {
+ 			return false;
+ 		}
+ 
+@@ -129,7 +128,7 @@
+ 			$_term = false;
+ 
+ 			// Grab all matching terms, in case any are shared between taxonomies.
+-			$terms = $wpdb->get_results( $wpdb->prepare( "SELECT t.*, tt.* FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id WHERE t.term_id = %d", $term_id ) );
++			$terms = $wpdb->get_results( $wpdb->prepare( "SELECT t.*, tt.* FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id WHERE t.term_id = %s", $term_id ) );
+ 			if ( ! $terms ) {
+ 				return false;
+ 			}
+--- wordpress-pristine/wp-includes/class-wp-user.php
++++ wordpress/wp-includes/class-wp-user.php
+@@ -152,7 +152,7 @@
+ 			return;
+ 		}
+ 
+-		if ( ! empty( $id ) && ! is_numeric( $id ) ) {
++		if ( ! empty( $id ) && ! wp_is_uuid( $id ) ) {
+ 			$name = $id;
+ 			$id   = 0;
+ 		}
+@@ -183,7 +183,7 @@
+ 			$data->ID = 0;
+ 		}
+ 		$this->data = $data;
+-		$this->ID   = (int) $data->ID;
++		$this->ID   = $data->ID;
+ 
+ 		$this->for_site( $site_id );
+ 	}
+@@ -210,11 +210,7 @@
+ 
+ 		if ( 'id' === $field ) {
+ 			// Make sure the value is numeric to avoid casting objects, for example, to int 1.
+-			if ( ! is_numeric( $value ) ) {
+-				return false;
+-			}
+-			$value = (int) $value;
+-			if ( $value < 1 ) {
++			if ( ! wp_is_uuid( $value ) ) {
+ 				return false;
+ 			}
+ 		} else {
+--- wordpress-pristine/wp-includes/formatting.php
++++ wordpress/wp-includes/formatting.php
+@@ -4955,6 +4955,10 @@
+ 		case 'page_for_posts':
+ 		case 'rss_excerpt_length':
+ 		case 'default_category':
++			// Pressgres R-003: a term ID is a UUID string (0 = none).
++			$value = wp_is_uuid( $value ) ? $value : 0;
++			break;
++
+ 		case 'default_email_category':
+ 		case 'default_link_category':
+ 		case 'close_comments_days_old':
+--- wordpress-pristine/wp-includes/functions.php
++++ wordpress/wp-includes/functions.php
+@@ -5065,10 +5065,24 @@
+ function wp_parse_id_list( $input_list ): array {
+ 	$input_list = wp_parse_list( $input_list );
+ 
+-	return array_unique( array_map( 'absint', $input_list ) );
++	// Pressgres R-003: IDs are canonical lowercase UUID strings; drop anything else.
++	$input_list = array_map( static fn( $v ) => is_scalar( $v ) ? strtolower( (string) $v ) : '', $input_list );
++	return array_values( array_unique( array_filter( $input_list, 'wp_is_uuid' ) ) );
+ }
+ 
+ /**
++ * Pressgres R-003: quoted SQL list of UUIDs for IN()/NOT IN(). An empty list
++ * yields the nil UUID, which matches no row (so NOT IN excludes nothing).
++ *
++ * @param mixed $ids List of IDs.
++ * @return string
++ */
++function pressgres_sql_id_list( $ids ) {
++	$ids = wp_parse_id_list( $ids );
++	return $ids ? "'" . implode( "','", $ids ) . "'" : "'00000000-0000-0000-0000-000000000000'";
++}
++
++/**
+  * Cleans up an array, comma- or space-separated list of slugs.
+  *
+  * @since 4.7.0
+@@ -7420,7 +7434,7 @@
+  */
+ function _get_non_cached_ids( $object_ids, $cache_group ) {
+ 	$object_ids = array_filter( $object_ids, '_validate_cache_id' );
+-	$object_ids = array_unique( array_map( 'intval', $object_ids ), SORT_NUMERIC );
++	$object_ids = array_unique( $object_ids );
+ 
+ 	if ( empty( $object_ids ) ) {
+ 		return array();
+@@ -7431,7 +7445,7 @@
+ 
+ 	foreach ( $cache_values as $id => $value ) {
+ 		if ( false === $value ) {
+-			$non_cached_ids[] = (int) $id;
++			$non_cached_ids[] = $id;
+ 		}
+ 	}
+ 
+@@ -7454,8 +7468,7 @@
+ 	 * filter_var() could be used here, but the `filter` PHP extension
+ 	 * is considered optional and may not be available.
+ 	 */
+-	if ( is_int( $object_id )
+-		|| ( is_string( $object_id ) && (string) (int) $object_id === $object_id ) ) {
++	if ( wp_is_uuid( $object_id ) ) {
+ 		return true;
+ 	}
+ 
+--- wordpress-pristine/wp-includes/meta.php
++++ wordpress/wp-includes/meta.php
+@@ -40,11 +40,10 @@
+ function add_metadata( $meta_type, $object_id, $meta_key, $meta_value, $unique = false ) {
+ 	global $wpdb;
+ 
+-	if ( ! $meta_type || ! $meta_key || ! is_numeric( $object_id ) ) {
++	if ( ! $meta_type || ! $meta_key || ! wp_is_uuid( $object_id ) ) {
+ 		return false;
+ 	}
+ 
+-	$object_id = absint( $object_id );
+ 	if ( ! $object_id ) {
+ 		return false;
+ 	}
+@@ -94,7 +93,7 @@
+ 
+ 	if ( $unique && $wpdb->get_var(
+ 		$wpdb->prepare(
+-			"SELECT COUNT(*) FROM $table WHERE meta_key = %s AND $column = %d",
++			"SELECT COUNT(*) FROM $table WHERE meta_key = %s AND $column = %s",
+ 			$meta_key,
+ 			$object_id
+ 		)
+@@ -140,7 +139,7 @@
+ 		return false;
+ 	}
+ 
+-	$mid = (int) $wpdb->insert_id;
++	$mid = $wpdb->insert_id;
+ 
+ 	wp_cache_delete( $object_id, $meta_type . '_meta' );
+ 
+@@ -196,11 +195,10 @@
+ function update_metadata( $meta_type, $object_id, $meta_key, $meta_value, $prev_value = '' ) {
+ 	global $wpdb;
+ 
+-	if ( ! $meta_type || ! $meta_key || ! is_numeric( $object_id ) ) {
++	if ( ! $meta_type || ! $meta_key || ! wp_is_uuid( $object_id ) ) {
+ 		return false;
+ 	}
+ 
+-	$object_id = absint( $object_id );
+ 	if ( ! $object_id ) {
+ 		return false;
+ 	}
+@@ -262,7 +260,7 @@
+ 		}
+ 	}
+ 
+-	$meta_ids = $wpdb->get_col( $wpdb->prepare( "SELECT $id_column FROM $table WHERE meta_key = %s AND $column = %d", $meta_key, $object_id ) );
++	$meta_ids = $wpdb->get_col( $wpdb->prepare( "SELECT $id_column FROM $table WHERE meta_key = %s AND $column = %s", $meta_key, $object_id ) );
+ 	if ( empty( $meta_ids ) ) {
+ 		return add_metadata( $meta_type, $object_id, $raw_meta_key, $passed_value );
+ 	}
+@@ -626,11 +624,10 @@
+  *               Null if the value does not exist.
+  */
+ function get_metadata_raw( $meta_type, $object_id, $meta_key = '', $single = false ) {
+-	if ( ! $meta_type || ! is_numeric( $object_id ) ) {
++	if ( ! $meta_type || ! wp_is_uuid( $object_id ) ) {
+ 		return false;
+ 	}
+ 
+-	$object_id = absint( $object_id );
+ 	if ( ! $object_id ) {
+ 		return false;
+ 	}
+@@ -1153,7 +1150,7 @@
+ 		$object_ids = explode( ',', $object_ids );
+ 	}
+ 
+-	$object_ids = array_map( 'intval', $object_ids );
++	$object_ids = array_filter( $object_ids, 'wp_is_uuid' );
+ 
+ 	/**
+ 	 * Short-circuits updating the metadata cache of a specific type.
+@@ -1198,14 +1195,14 @@
+ 	}
+ 
+ 	// Get meta info.
+-	$id_list   = implode( ',', $non_cached_ids );
++	$id_list   = "'" . implode( "','", $non_cached_ids ) . "'";
+ 	$id_column = ( 'user' === $meta_type ) ? 'umeta_id' : 'meta_id';
+ 
+ 	$meta_list = $wpdb->get_results( "SELECT $column, meta_key, meta_value FROM $table WHERE $column IN ($id_list) ORDER BY $id_column ASC", ARRAY_A );
+ 
+ 	if ( ! empty( $meta_list ) ) {
+ 		foreach ( $meta_list as $metarow ) {
+-			$mpid = (int) $metarow[ $column ];
++			$mpid = $metarow[ $column ];
+ 			$mkey = $metarow['meta_key'];
+ 			$mval = $metarow['meta_value'];
+ 
+--- wordpress-pristine/wp-includes/post.php
++++ wordpress/wp-includes/post.php
+@@ -1150,12 +1150,12 @@
+ 		} elseif ( 'raw' === $post->filter ) {
+ 			$_post = new WP_Post( $post );
+ 		} elseif ( isset( $post->ID ) ) {
+-			$_post = WP_Post::get_instance( (int) $post->ID );
++			$_post = WP_Post::get_instance( $post->ID );
+ 		} else {
+ 			$_post = null;
+ 		}
+-	} elseif ( is_numeric( $post ) ) {
+-		$_post = WP_Post::get_instance( (int) $post );
++	} elseif ( wp_is_uuid( $post ) ) {
++		$_post = WP_Post::get_instance( $post );
+ 	} else {
+ 		$_post = null;
+ 	}
+@@ -3023,10 +3023,13 @@
+  * )
+  */
+ function sanitize_post_field( $field, $value, $post_id, $context = 'display' ) {
+-	$int_fields = array( 'ID', 'post_parent', 'menu_order' );
++	$int_fields = array( 'menu_order' );
+ 	if ( in_array( $field, $int_fields, true ) ) {
+ 		$value = (int) $value;
+ 	}
++	if ( in_array( $field, array( 'ID', 'post_parent' ), true ) ) {
++		$value = wp_is_uuid( $value ) ? $value : 0;
++	}
+ 
+ 	// Fields which contain arrays of integers.
+ 	$array_int_fields = array( 'ancestors' );
+@@ -4403,8 +4406,6 @@
+  *                        WP_Error object if 'category' taxonomy doesn't exist.
+  */
+ function wp_get_post_categories( $post_id = 0, $args = array() ) {
+-	$post_id = (int) $post_id;
+-
+ 	$defaults = array( 'fields' => 'ids' );
+ 	$args     = wp_parse_args( $args, $defaults );
+ 
+@@ -4450,7 +4451,6 @@
+  *                        WP_Error object if `$taxonomy` doesn't exist.
+  */
+ function wp_get_post_terms( $post_id = 0, $taxonomy = 'post_tag', $args = array() ) {
+-	$post_id = (int) $post_id;
+ 
+ 	$defaults = array( 'fields' => 'all' );
+ 	$args     = wp_parse_args( $args, $defaults );
+@@ -5038,7 +5038,7 @@
+ 			}
+ 		}
+ 
+-		$post_id = (int) $wpdb->insert_id;
++		$post_id = $wpdb->insert_id;
+ 
+ 		// Use the newly generated $post_id.
+ 		$where = array( 'ID' => $post_id );
+@@ -5659,8 +5659,8 @@
+ 		}
+ 	} else {
+ 		// Post slugs must be unique across all posts.
+-		$check_sql       = "SELECT post_name FROM $wpdb->posts WHERE post_name = %s AND post_type = %s AND ID != %d LIMIT 1";
+-		$post_name_check = $wpdb->get_var( $wpdb->prepare( $check_sql, $slug, $post_type, $post_id ) );
++		$check_sql       = "SELECT post_name FROM $wpdb->posts WHERE post_name = %s AND post_type = %s AND ID NOT IN (" . pressgres_sql_id_list( $post_id ) . ') LIMIT 1';
++		$post_name_check = $wpdb->get_var( $wpdb->prepare( $check_sql, $slug, $post_type ) );
+ 
+ 		$post = get_post( $post_id );
+ 
+@@ -5807,9 +5807,7 @@
+  * @return array|false|WP_Error Array of term taxonomy IDs of affected terms. WP_Error or false on failure.
+  */
+ function wp_set_post_terms( $post_id = 0, $terms = '', $taxonomy = 'post_tag', $append = false ) {
+-	$post_id = (int) $post_id;
+-
+-	if ( ! $post_id ) {
++	if ( ! wp_is_uuid( $post_id ) ) {
+ 		return false;
+ 	}
+ 
+@@ -5830,7 +5828,7 @@
+ 	 * children with the same names but different parents aren't confused.
+ 	 */
+ 	if ( is_taxonomy_hierarchical( $taxonomy ) ) {
+-		$terms = array_unique( array_map( 'intval', $terms ) );
++		$terms = wp_parse_id_list( $terms );
+ 	}
+ 
+ 	return wp_set_object_terms( $post_id, $terms, $taxonomy, $append );
+@@ -5852,7 +5850,6 @@
+  * @return array|false|WP_Error Array of term taxonomy IDs of affected categories. WP_Error or false on failure.
+  */
+ function wp_set_post_categories( $post_id = 0, $post_categories = array(), $append = false ) {
+-	$post_id     = (int) $post_id;
+ 	$post_type   = get_post_type( $post_id );
+ 	$post_status = get_post_status( $post_id );
+ 
+--- wordpress-pristine/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php
++++ wordpress/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php
+@@ -111,12 +111,13 @@
+ 		}
+ 		register_rest_route(
+ 			$this->namespace,
+-			'/' . $this->rest_base . '/(?P<id>[\d]+)',
++			'/' . $this->rest_base . '/(?P<id>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})',
+ 			array(
+ 				'args'        => array(
+ 					'id' => array(
+ 						'description' => __( 'Unique identifier for the post.' ),
+-						'type'        => 'integer',
++						'type'        => 'string',
++						'format'      => 'uuid',
+ 					),
+ 				),
+ 				array(
+@@ -557,11 +558,11 @@
+ 			array( 'status' => 404 )
+ 		);
+ 
+-		if ( (int) $id <= 0 ) {
++		if ( ! wp_is_uuid( $id ) ) {
+ 			return $error;
+ 		}
+ 
+-		$post = get_post( (int) $id );
++		$post = get_post( $id );
+ 		if ( empty( $post ) || empty( $post->ID ) || $this->post_type !== $post->post_type ) {
+ 			return $error;
+ 		}
+@@ -2053,7 +2054,7 @@
+ 		}
+ 
+ 		if ( rest_is_field_included( 'author', $fields ) ) {
+-			$data['author'] = (int) $post->post_author;
++			$data['author'] = $post->post_author;
+ 		}
+ 
+ 		if ( rest_is_field_included( 'featured_media', $fields ) ) {
+--- wordpress-pristine/wp-includes/rest-api.php
++++ wordpress/wp-includes/rest-api.php
+@@ -3244,7 +3244,7 @@
+ 		return '';
+ 	}
+ 
+-	$route = sprintf( '%s/%d', $post_type_route, $post->ID );
++	$route = sprintf( '%s/%s', $post_type_route, $post->ID );
+ 
+ 	/**
+ 	 * Filters the REST API route for a post.
+--- wordpress-pristine/wp-includes/taxonomy.php
++++ wordpress/wp-includes/taxonomy.php
+@@ -1647,7 +1647,7 @@
+ 		$defaults['parent'] = (int) $parent_term;
+ 	}
+ 
+-	if ( is_int( $term ) ) {
++	if ( is_int( $term ) || wp_is_uuid( $term ) ) {
+ 		if ( 0 === $term ) {
+ 			return 0;
+ 		}
+@@ -1784,13 +1784,17 @@
+  * @return mixed Sanitized field.
+  */
+ function sanitize_term_field( $field, $value, $term_id, $taxonomy, $context ) {
+-	$int_fields = array( 'parent', 'term_id', 'count', 'term_group', 'term_taxonomy_id', 'object_id' );
++	$int_fields = array( 'count', 'term_group' );
+ 	if ( in_array( $field, $int_fields, true ) ) {
+ 		$value = (int) $value;
+ 		if ( $value < 0 ) {
+ 			$value = 0;
+ 		}
+ 	}
++	$uuid_fields = array( 'parent', 'term_id', 'term_taxonomy_id', 'object_id' );
++	if ( in_array( $field, $uuid_fields, true ) ) {
++		$value = wp_is_uuid( $value ) ? $value : 0;
++	}
+ 
+ 	$context = strtolower( $context );
+ 
+@@ -1937,6 +1941,9 @@
+ 	if ( in_array( $field, $int_fields, true ) ) {
+ 		$value = (int) $value;
+ 	}
++	if ( in_array( $field, $uuid_fields, true ) ) {
++		$value = wp_is_uuid( $value ) ? $value : 0;
++	}
+ 
+ 	return $value;
+ }
+@@ -2309,7 +2316,6 @@
+ 	if ( ! is_array( $object_ids ) ) {
+ 		$object_ids = array( $object_ids );
+ 	}
+-	$object_ids = array_map( 'intval', $object_ids );
+ 
+ 	$defaults = array(
+ 		'update_term_meta_cache' => false,
+@@ -2625,7 +2631,7 @@
+ 		return new WP_Error( 'db_insert_error', __( 'Could not insert term into the database.' ), $wpdb->last_error );
+ 	}
+ 
+-	$term_id = (int) $wpdb->insert_id;
++	$term_id = $wpdb->insert_id;
+ 
+ 	// Seems unreachable. However, is used in the case that a term name is provided, which sanitizes to an empty string.
+ 	if ( empty( $slug ) ) {
+@@ -2640,7 +2646,7 @@
+ 	}
+ 
+ 	/** @var numeric-string|null $tt_id */
+-	$tt_id = $wpdb->get_var( $wpdb->prepare( "SELECT tt.term_taxonomy_id FROM $wpdb->term_taxonomy AS tt INNER JOIN $wpdb->terms AS t ON tt.term_id = t.term_id WHERE tt.taxonomy = %s AND t.term_id = %d", $taxonomy, $term_id ) );
++	$tt_id = $wpdb->get_var( $wpdb->prepare( "SELECT tt.term_taxonomy_id FROM $wpdb->term_taxonomy AS tt INNER JOIN $wpdb->terms AS t ON tt.term_id = t.term_id WHERE tt.taxonomy = %s AND t.term_id = %s", $taxonomy, $term_id ) );
+ 
+ 	if ( ! empty( $tt_id ) ) {
+ 		return array(
+@@ -2653,7 +2659,7 @@
+ 		return new WP_Error( 'db_insert_error', __( 'Could not insert term taxonomy into the database.' ), $wpdb->last_error );
+ 	}
+ 
+-	$tt_id = (int) $wpdb->insert_id;
++	$tt_id = $wpdb->insert_id;
+ 
+ 	/*
+ 	 * Confidence check: if we just created a term with the same parent + taxonomy + slug but a higher term_id than
+@@ -2661,7 +2667,7 @@
+ 	 * and term_taxonomy_id of the older term instead. Then return out of the function so that the "create" hooks
+ 	 * are not fired.
+ 	 */
+-	$duplicate_term = $wpdb->get_row( $wpdb->prepare( "SELECT t.term_id, t.slug, tt.term_taxonomy_id, tt.taxonomy FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy AS tt ON ( tt.term_id = t.term_id ) WHERE t.slug = %s AND tt.parent = %d AND tt.taxonomy = %s AND t.term_id < %d AND tt.term_taxonomy_id != %d", $slug, $parent, $taxonomy, $term_id, $tt_id ) );
++	$duplicate_term = $wpdb->get_row( $wpdb->prepare( "SELECT t.term_id, t.slug, tt.term_taxonomy_id, tt.taxonomy FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy AS tt ON ( tt.term_id = t.term_id ) WHERE t.slug = %s AND " . ( $parent ? $wpdb->prepare( 'tt.parent = %s', $parent ) : 'tt.parent IS NULL' ) . " AND tt.taxonomy = %s AND t.term_id < %s AND tt.term_taxonomy_id != %s", $slug, $taxonomy, $term_id, $tt_id ) );
+ 
+ 	/**
+ 	 * Filters the duplicate term check that takes place during term creation.
+@@ -2851,8 +2857,6 @@
+ function wp_set_object_terms( $object_id, $terms, $taxonomy, $append = false ) {
+ 	global $wpdb;
+ 
+-	$object_id = (int) $object_id;
+-
+ 	if ( ! taxonomy_exists( $taxonomy ) ) {
+ 		return new WP_Error( 'invalid_taxonomy', __( 'Invalid taxonomy.' ) );
+ 	}
+@@ -2889,7 +2893,7 @@
+ 
+ 		if ( ! $term_info ) {
+ 			// Skip if a non-existent term ID is passed.
+-			if ( is_int( $term ) ) {
++			if ( is_int( $term ) || wp_is_uuid( $term ) ) {
+ 				continue;
+ 			}
+ 
+@@ -2903,7 +2907,7 @@
+ 		$tt_id    = $term_info['term_taxonomy_id'];
+ 		$tt_ids[] = $tt_id;
+ 
+-		if ( $wpdb->get_var( $wpdb->prepare( "SELECT term_taxonomy_id FROM $wpdb->term_relationships WHERE object_id = %d AND term_taxonomy_id = %d", $object_id, $tt_id ) ) ) {
++		if ( $wpdb->get_var( $wpdb->prepare( "SELECT term_taxonomy_id FROM $wpdb->term_relationships WHERE object_id = %s AND term_taxonomy_id = %s", $object_id, $tt_id ) ) ) {
+ 			continue;
+ 		}
+ 
+@@ -3623,7 +3627,7 @@
+  * @return true Always true when complete.
+  */
+ function wp_update_term_count_now( $terms, $taxonomy ) {
+-	$terms = array_map( 'intval', $terms );
++	$terms = wp_parse_id_list( $terms );
+ 
+ 	$taxonomy = get_taxonomy( $taxonomy );
+ 	if ( ! empty( $taxonomy->update_count_callback ) ) {
+@@ -3728,8 +3732,7 @@
+ 	$taxonomies = array();
+ 	// If no taxonomy, assume tt_ids.
+ 	if ( empty( $taxonomy ) ) {
+-		$tt_ids = array_map( 'intval', $ids );
+-		$tt_ids = implode( ', ', $tt_ids );
++		$tt_ids = pressgres_sql_id_list( $ids );
+ 		$terms  = $wpdb->get_results( "SELECT term_id, taxonomy FROM $wpdb->term_taxonomy WHERE term_taxonomy_id IN ($tt_ids)" );
+ 		$ids    = array();
+ 
+@@ -4162,7 +4165,7 @@
+ 
+ 	$non_cached_ids = _get_non_cached_ids( $term_ids, 'terms' );
+ 	if ( ! empty( $non_cached_ids ) ) {
+-		$fresh_terms = $wpdb->get_results( sprintf( "SELECT t.*, tt.* FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id WHERE t.term_id IN (%s)", implode( ',', array_map( 'intval', $non_cached_ids ) ) ) );
++		$fresh_terms = $wpdb->get_results( sprintf( "SELECT t.*, tt.* FROM $wpdb->terms AS t INNER JOIN $wpdb->term_taxonomy AS tt ON t.term_id = tt.term_id WHERE t.term_id IN (%s)", pressgres_sql_id_list( $non_cached_ids ) ) );
+ 
+ 		update_term_cache( $fresh_terms );
+ 	}
+@@ -4234,7 +4237,7 @@
+ 
+ 		if ( $object_types ) {
+ 			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.QuotedDynamicPlaceholderGeneration
+-			$count += (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->term_relationships, $wpdb->posts WHERE $wpdb->posts.ID = $wpdb->term_relationships.object_id AND post_status IN ('" . implode( "', '", $post_statuses ) . "') AND post_type IN ('" . implode( "', '", $object_types ) . "') AND term_taxonomy_id = %d", $tt_id ) );
++			$count += (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->term_relationships, $wpdb->posts WHERE $wpdb->posts.ID = $wpdb->term_relationships.object_id AND post_status IN ('" . implode( "', '", $post_statuses ) . "') AND post_type IN ('" . implode( "', '", $object_types ) . "') AND term_taxonomy_id = %s", $tt_id ) );
+ 		}
+ 
+ 		/**
+--- wordpress-pristine/wp-includes/user.php
++++ wordpress/wp-includes/user.php
+@@ -728,7 +728,7 @@
+ 		return 0;
+ 	}
+ 	$user = wp_get_current_user();
+-	return (int) ( $user->ID ?? 0 );
++	return $user->ID ?? 0;
+ }
+ 
+ /**
+@@ -1898,7 +1898,7 @@
+ function sanitize_user_field( $field, $value, $user_id, $context ) {
+ 	$int_fields = array( 'ID' );
+ 	if ( in_array( $field, $int_fields, true ) ) {
+-		$value = (int) $value;
++		$value = wp_is_uuid( $value ) ? $value : 0;
+ 	}
+ 
+ 	if ( 'raw' === $context ) {
+@@ -2033,7 +2033,7 @@
+  * @param WP_User|int $user User object or ID to be cleaned from the cache
+  */
+ function clean_user_cache( $user ) {
+-	if ( is_numeric( $user ) ) {
++	if ( wp_is_uuid( $user ) ) {
+ 		$user = new WP_User( $user );
+ 	}
+ 
+@@ -2572,7 +2572,7 @@
+ 		$wpdb->update( $wpdb->users, $data, array( 'ID' => $user_id ) );
+ 	} else {
+ 		$wpdb->insert( $wpdb->users, $data );
+-		$user_id = (int) $wpdb->insert_id;
++		$user_id = $wpdb->insert_id;
+ 	}
+ 
+ 	$user = new WP_User( $user_id );

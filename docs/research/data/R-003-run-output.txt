@@ -1,0 +1,91 @@
+applying wordpress-7.1.5-r003-uuid.patch
+patching file 'wp-includes/class-wp-post.php'
+patching file 'wp-includes/class-wp-query.php'
+patching file 'wp-includes/class-wp-term-query.php'
+patching file 'wp-includes/class-wp-term.php'
+patching file 'wp-includes/class-wp-user.php'
+patching file 'wp-includes/formatting.php'
+patching file 'wp-includes/functions.php'
+patching file 'wp-includes/meta.php'
+patching file 'wp-includes/post.php'
+patching file 'wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php'
+patching file 'wp-includes/rest-api.php'
+patching file 'wp-includes/taxonomy.php'
+patching file 'wp-includes/user.php'
+prepared /Users/michael/Developer/Wordpress/pressgres/worktrees/R-003/prototypes/r-003/build/wordpress
+
+PostgreSQL 18.6 on aarch64-unknown-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit|7
+[setup] roles                        ["administrator","editor","author","contributor","subscriber"]
+[setup] admin user ID                '01a20555-4323-7fc7-b10c-0a6cce968d46'
+[setup] default_category term_id     '01a20555-4343-7f55-9164-4e3917efcf35'
+[setup] application password uuid    'ebc76b44-5403-4656-8100-a2a678b0b8a8'
+[setup] state written                '/r003/build/state.json'
+== WordPress PHP API: wp_insert_post() / get_post() ==
+PASS wp_set_current_user(uuid) -> get_current_user_id()  ['01a20555-4323-7fc7-b10c-0a6cce968d46']
+PASS wp_insert_post() returned a string  ['01a20555-4774-71c7-a185-770d093cc6a9']
+PASS returned ID is a canonical UUIDv7 (36 chars)  [len=36]
+PASS $wpdb->insert_id after insert is not an int  ['01a20555-4787-7f59-9c05-74090ca43ab3']
+PASS get_post(uuid) returned WP_Post
+PASS get_post()->ID === returned UUID (untruncated)  ['01a20555-4774-71c7-a185-770d093cc6a9']
+PASS get_post()->post_author === admin UUID  ['01a20555-4323-7fc7-b10c-0a6cce968d46']
+PASS get_post()->post_parent is legacy 0/empty sentinel  [0]
+PASS post_title round-trips
+PASS default category assigned (UUID term_id)  [["01a20555-4343-7f55-9164-4e3917efcf35"]]
+PASS PostgreSQL row exists for 01a20555-4774-71c7-a185-770d093cc6a9
+PASS SELECT uuid_extract_version("ID") = 7  [got 7, uuid_extract_timestamp=2026-11-22 22:16:44.66+00]
+PASS stored "ID" equals returned ID byte-for-byte
+     db row: {"id":"01a20555-4774-71c7-a185-770d093cc6a9","v":7,"ts":"2026-11-22 22:16:44.66+00","author":"01a20555-4323-7fc7-b10c-0a6cce968d46","post_title":"Hello from PHP (R-003)"}
+
+php demo: 0 failure(s)
+== REST API: POST/GET /wp/v2/posts (application password) ==
+PASS GET /wp/v2/users/me -> 200  [HTTP 200]
+PASS users/me id === admin UUID  [{"id":"01a20555-4323-7fc7-b10c-0a6cce968d46","username":"admin","name":"R-003 Admin","first_name":"","last_name":"","email":"admin@example.invalid","url":"","description":"","link":"http:\/\/localhost:58080\/?author=1","locale":"en_US","nickname":"admin","slug":"admin","roles":["administrator"],"reg]
+PASS POST /wp/v2/posts -> 201  [HTTP 201]
+PASS response id is a JSON string  ['01a20555-4c94-733d-9b71-924b26fb8f2d' ]
+PASS response id is canonical UUIDv7 (36 chars, untruncated)  [len=36]
+PASS response author === admin UUID  ['01a20555-4323-7fc7-b10c-0a6cce968d46']
+PASS raw JSON contains the quoted UUID
+PASS GET /wp/v2/posts/<uuid> -> 200  [HTTP 200 ]
+PASS GET id === POST id (untruncated)  ['01a20555-4c94-733d-9b71-924b26fb8f2d']
+PASS GET title.rendered round-trips
+PASS _links.self ends with the full UUID  [http://localhost:58080/index.php?rest_route=/wp/v2/posts/01a20555-4c94-733d-9b71-924b26fb8f2d]
+PASS GET categories === [default category UUID]  [["01a20555-4343-7f55-9164-4e3917efcf35"]]
+PASS GET /wp/v2/posts/<uuid of PHP-created post> -> 200 + same id  [HTTP 200]
+PASS PostgreSQL row exists for 01a20555-4c94-733d-9b71-924b26fb8f2d
+PASS SELECT uuid_extract_version("ID") = 7  [got 7, uuid_extract_timestamp=2026-11-22 22:16:45.972+00]
+PASS stored "ID" equals returned ID byte-for-byte
+     db row: {"id":"01a20555-4c94-733d-9b71-924b26fb8f2d","v":7,"ts":"2026-11-22 22:16:45.972+00","author":"01a20555-4323-7fc7-b10c-0a6cce968d46","post_title":"Hello from REST (R-003)"}
+     REST response excerpt: {"id":"01a20555-4c94-733d-9b71-924b26fb8f2d","status":"publish","type":"post","link":"http://localhost:58080/?p=01a20555-4c94-733d-9b71-924b26fb8f2d","author":"01a20555-4323-7fc7-b10c-0a6cce968d46","categories":["01a20555-4343-7f55-9164-4e3917efcf35"]}
+
+rest demo: 0 failure(s)
+== query log summary (/r003/build/logs/query-log.jsonl) ==
+phase         total     ok  error  unsupported
+setup           118    118      0            0
+php-api          51     51      0            0
+rest            184    184      0            0
+
+Distinct statement fingerprints (excluding adapter-internal catalog queries):
+phase         distinct      raw SQL rewritten     insert/update/delete()  failing
+setup               24                      4                          5        0
+php-api             26                      6                          6        0
+rest                31                      6                          7        0
+happy path (php-api + rest, de-duplicated): 33 distinct fingerprints, 7 with a raw-SQL rewrite rule, 8 via insert/update/delete()
+all phases: 46 distinct fingerprints
+
+Statements per REST request (web service):
+    31  GET /?rest_route=/wp/v2/users/me&context=edit
+    64  POST /?rest_route=/wp/v2/posts
+    78  GET /?rest_route=/wp/v2/posts/<uuid>
+
+Rules applied (number of distinct fingerprints):
+  backtick-to-double-quote                   1
+  insert-bound-params                        7
+  insert-returning-pk                        7
+  limit-offset-comma                         1
+  options-on-duplicate-key-to-on-conflict    1
+  quote-mixed-case-column                    8
+  strip-sql-calc-found-rows                  1
+  update-bound-params                        5
+  uuid-zero-sentinel-to-null                 2
+
+fingerprint CSV: /r003/build/logs/query-fingerprints.csv
