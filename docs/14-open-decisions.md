@@ -25,15 +25,16 @@
 | ADR | Decision | Recommended provisional answer |
 |---|---|---|
 | 001 | WordPress change strategy | managed version-specific patchset, not unbounded fork |
-| 002 | Native UUID-v7 policy | hard requirement; nullable refs; zero never parsed as UUID |
-| 003 | SQL parser | investigate WP SQLite parser licensing/reuse before building own |
+| 002 | Native UUID-v7 policy | hard requirement; nullable refs; zero never parsed as UUID; written rationale (why not dual IDs) required |
+| 003 | SQL parser | reuse WordPress SQLite Database Integration MySQL parser/AST with a PostgreSQL emitter unless the R-004 spike rules it out |
 | 004 | Plugin support | reviewed, signed manifests and disposable activation tests |
 | 005 | Local dev | DDEV + Compose, no forced Docker production runtime |
 | 006 | Version policy | WP 7.1, PHP 8.4, PG 18 first; CI-gated expansions |
 | 007 | Project brand | Pressgres working name, legal clearance pending |
 | 008 | Foreign keys | gradual enforcement after compatibility tests |
 | 009 | Legacy migration | restricted, core-only pilot, explicit source ID crosswalk |
-| 010 | Redis | vetted drop-in instead of custom caching engine |
+| 010 | Object cache backend | vetted drop-in instead of custom caching engine; Redis vs Valkey licensing decided here |
+| 011 | DDL staging model | schema planner + migrator role only; web runtime never executes DDL |
 
 ## Questions to resolve before M1
 

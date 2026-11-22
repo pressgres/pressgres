@@ -4,7 +4,7 @@
 
 **Yes: support both Docker and DDEV.** Docker Compose is the portable CI/developer integration fixture, DDEV is a first-class developer convenience profile. Neither should dictate production infrastructure; deployable OCI images with immutable tags and Helm/managed-service reference guide can come later.
 
-DDEV already supports PostgreSQL as a database service in its architecture; avoid adding a second hidden Postgres service if a DDEV-configured database can be used. Add Redis through DDEV add-on/custom Compose integration; verify against an explicit DDEV release. Docs: https://docs.ddev.com/en/stable/users/usage/architecture/ and https://docs.ddev.com/en/stable/users/extend/additional-services/.
+DDEV already supports PostgreSQL as a database service in its architecture; avoid adding a second hidden Postgres service if a DDEV-configured database can be used. Add Redis through DDEV add-on/custom Compose integration; verify against an explicit DDEV release. Docs: <https://docs.ddev.com/en/stable/users/usage/architecture/> and <https://docs.ddev.com/en/stable/users/extend/additional-services/>.
 
 ## Development services
 

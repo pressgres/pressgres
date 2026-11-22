@@ -2,8 +2,8 @@
 
 ## Language and style
 
-- PHP 8.4 features allowed in Shell code; WordPress patched source retains necessary core style with minimal localized patchset. Do not impose new coding style across upstream WordPress files unnecessarily.
-- New Shell code: PSR-12 formatting, PSR-4 autoloading, `declare(strict_types=1)` in new PHP modules, descriptive names, readonly immutable DTOs when practical, exceptions with stable error codes.
+- PHP 8.4 features allowed in Pressgres code; WordPress patched source retains necessary core style with minimal localized patchset. Do not impose new coding style across upstream WordPress files unnecessarily.
+- New Pressgres code: PSR-12 formatting, PSR-4 autoloading, `declare(strict_types=1)` in new PHP modules, descriptive names, readonly immutable DTOs when practical, exceptions with stable error codes.
 - Maintain WordPress-facing APIs and hooks using WordPress naming/behavior where compatibility requires it.
 - PHPStan or Psalm at a strict baseline, PHPUnit tests, PHP-CS-Fixer/Pint configuration selected and pinned; composer audit and dependency checks.
 - SQL: versioned, checksummed migrations; explicit schema, quoted legacy identifiers where required; bind values, whitelist identifiers, never format values into SQL.
@@ -47,4 +47,4 @@ Breaking changes require `BREAKING CHANGE:` footer and migration notes. Use gene
 
 ## Semantic versioning and compatibility
 
-`0.x` for changing internals; `1.0` after published stable contracts. Distinguish Shell version, WordPress release, core patchset hash, schema version and individual adapter versions in a machine-readable lockfile. Plugin compatibility verdict applies **only** to stated tested versions.
+`0.x` for changing internals; `1.0` after published stable contracts. Distinguish Pressgres version, WordPress release, core patchset hash, schema version and individual adapter versions in a machine-readable lockfile. Plugin compatibility verdict applies **only** to stated tested versions.
