@@ -1,0 +1,132 @@
+R-005 patchset demo  (git: 2.54.0, host: Darwin)
+
+### 1. apply WordPress series to pristine 7.1.5 src/
+$ tools/patchset/bin/patchset apply .work/wp-7.1.5 tools/patchset/examples/patches/wordpress/7.1.5
+== verify 7.1.5 against .work/wp-7.1.5
+  upstream tree ok    sha256=9b52b38a786cea2d5463655f3b5c8385029dab2ad57da2d120e6867ee401ae7b files=3798
+  series hash ok      0001-add-object-id-helper.patch
+  series hash ok      0002-post-ids-use-object-id-helper.patch
+== apply (strict: no fuzz, no offset, exact pre/post images)
+  applied             0001-add-object-id-helper.patch
+  applied             0002-post-ids-use-object-id-helper.patch
+  patched tree ok     sha256=ab1d48c96c837290aae1d657df19a139dc1e7fa95f71553a21cd410eab159a81 (matches upstream.lock)
+RESULT: OK
+--> exit 0 (expected)
+
+### 1b. php -l on patched files
+$ sh -c cd '.work/wp-7.1.5' && for f in wp-settings.php wp-includes/post.php wp-includes/pressgres-object-id.php; do php -l $f; done
+No syntax errors detected in wp-settings.php
+No syntax errors detected in wp-includes/post.php
+No syntax errors detected in wp-includes/pressgres-object-id.php
+--> exit 0 (expected)
+
+### 1c. helper smoke test (absint stubbed; illustrative)
+$ php -r function absint($v){return abs((int)$v);} require '.work/wp-7.1.5/wp-includes/pressgres-object-id.php'; var_dump(pressgres_object_id('0190F3A2-7B1C-7DEF-8ABC-0123456789AB'), pressgres_object_id('42'));
+string(36) "0190f3a2-7b1c-7def-8abc-0123456789ab"
+int(42)
+--> exit 0 (expected)
+
+### 1d. generated modification notice
+$ cat .work/wp-7.1.5/PRESSGRES-MODIFICATIONS.txt
+This is a MODIFIED version of wordpress-develop 7.1.5.
+It was changed by the Pressgres project. Each patch below lists the files it
+changed and the date of the change. Complete patch sources: patches/ in the
+Pressgres source distribution. License: GPL-2.0-or-later (see license.txt).
+
+0001-add-object-id-helper.patch  [PG-WP-0001]  date=2026-11-22
+    wp-includes/pressgres-object-id.php
+    wp-settings.php
+0002-post-ids-use-object-id-helper.patch  [PG-WP-0002]  date=2026-11-22
+    wp-includes/post.php
+--> exit 0 (expected)
+
+### 2. apply Gutenberg series to pristine 89408c2 source
+$ tools/patchset/bin/patchset apply .work/gutenberg-89408c2 tools/patchset/examples/patches/gutenberg/89408c2
+== verify 89408c2 against .work/gutenberg-89408c2
+  upstream tree ok    sha256=b2cc1ed038ae7a850a26669aa3f503ab468e60daaadddd757e0e488190eb3257 files=12296
+  series hash ok      0001-format-library-image-id-as-string.patch
+== apply (strict: no fuzz, no offset, exact pre/post images)
+  applied             0001-format-library-image-id-as-string.patch
+  patched tree ok     sha256=146fb1fbc28f2f2898bece886351287f5b93f0bc958f63a4338f81e3317d9e8e (matches upstream.lock)
+RESULT: OK
+--> exit 0 (expected)
+
+### 3. tampered upstream tree is rejected before any patch is applied
+$ tools/patchset/bin/patchset apply .work/wp-tampered tools/patchset/examples/patches/wordpress/7.1.5
+== verify 7.1.5 against .work/wp-tampered
+  upstream tree MISMATCH
+    expected 9b52b38a786cea2d5463655f3b5c8385029dab2ad57da2d120e6867ee401ae7b (3798 files)
+    actual   0750541252218ab58c94fd5fa34812fec902fdd3b512e2897af01c72a1e6ced9 (3798 files)
+FATAL: upstream tree is not the pinned pristine wordpress-develop 7.1.5
+--> exit 1 (expected)
+
+### 4. tampered patch file is rejected by the series hash manifest
+$ tools/patchset/bin/patchset apply .work/wp-7.1.5-b .work/series-tampered
+== verify series-tampered against .work/wp-7.1.5-b
+  upstream tree ok    sha256=9b52b38a786cea2d5463655f3b5c8385029dab2ad57da2d120e6867ee401ae7b files=3798
+  series hash ok      0001-add-object-id-helper.patch
+  series hash MISMATCH 0002-post-ids-use-object-id-helper.patch
+    expected a9ecc3c79d6181339ef385134eb38b81e3f2ba810a68d759fbfa3452cefbbccb
+    actual   cbb68b9b1139bb93f3c205e4a1385179cb6bb5f4eefe4fe09346e4a19a36128a
+FATAL: patch series does not match its hash manifest
+--> exit 1 (expected)
+
+### 5a. strict apply refuses a drifted tree (offset-only drift)
+$ tools/patchset/bin/patchset apply .work/wp-next-offset tools/patchset/examples/patches/wordpress/7.1.5
+== verify 7.1.5 against .work/wp-next-offset
+  upstream tree MISMATCH
+    expected 9b52b38a786cea2d5463655f3b5c8385029dab2ad57da2d120e6867ee401ae7b (3798 files)
+    actual   7d68257408abf93749f836dd0b093b9800858aa1c2ecd40366714ade949021dd (3798 files)
+FATAL: upstream tree is not the pinned pristine wordpress-develop 7.1.5
+--> exit 1 (expected)
+
+### 5b. rebase-check dry run (offset-only drift)
+$ tools/patchset/bin/patchset rebase-check .work/wp-next-offset tools/patchset/examples/patches/wordpress/7.1.5
+== rebase-check 7.1.5 against .work/wp-next-offset (dry run; target is not modified)
+  series hash ok      0001-add-object-id-helper.patch
+  series hash ok      0002-post-ids-use-object-id-helper.patch
+  target differs from pinned upstream: classifying each patch
+  0001-add-object-id-helper.patch: CLEAN (exact pre-image)
+  0002-post-ids-use-object-id-helper.patch: REFRESH (applies only with offset; regenerate patch)
+      pre-image MISMATCH wp-includes/post.php (expected blob aa6e4f9999ae, found e8ca3471f63d)
+      git: Hunk #1 succeeded at 2849 (offset 3 lines).
+      git: Hunk #2 succeeded at 2920 (offset 3 lines).
+RESULT: 1 patch(es) need maintainer action
+--> exit 3 (expected)
+
+### 6. rebase-check dry run (conflicting upstream change)
+$ tools/patchset/bin/patchset rebase-check .work/wp-next-conflict tools/patchset/examples/patches/wordpress/7.1.5
+== rebase-check 7.1.5 against .work/wp-next-conflict (dry run; target is not modified)
+  series hash ok      0001-add-object-id-helper.patch
+  series hash ok      0002-post-ids-use-object-id-helper.patch
+  target differs from pinned upstream: classifying each patch
+  0001-add-object-id-helper.patch: CLEAN (exact pre-image)
+  0002-post-ids-use-object-id-helper.patch: CONFLICT (hunk context changed; manual rebase required)
+      pre-image MISMATCH wp-includes/post.php (expected blob aa6e4f9999ae, found 7abe0725ec49)
+      git: Checking patch wp-includes/post.php...
+      git: error: while searching for:
+      git:  * @return bool Whether post is sticky.
+      git:  */
+      git: function is_sticky( $post_id = 0 ) {
+      git: 	$post_id = absint( $post_id );
+      git: 
+      git: 	if ( ! $post_id ) {
+      git: 		$post_id = get_the_ID();
+      git: 
+      git: error: patch failed: wp-includes/post.php:2917
+      git: error: wp-includes/post.php: patch does not apply
+    rejected hunks:
+      diff a/wp-includes/post.php b/wp-includes/post.php	(rejected hunks)
+      @@ -2917,7 +2917,7 @@ function get_post_custom_values( $key = '', $post_id = 0 ) {
+        * @return bool Whether post is sticky.
+        */
+       function is_sticky( $post_id = 0 ) {
+      -	$post_id = absint( $post_id );
+      +	$post_id = pressgres_object_id( $post_id ); // Pressgres: modified 2026-11-22.
+       
+       	if ( ! $post_id ) {
+       		$post_id = get_the_ID();
+RESULT: 1 patch(es) need maintainer action
+--> exit 3 (expected)
+
+DEMO RESULT: all scenarios behaved as expected

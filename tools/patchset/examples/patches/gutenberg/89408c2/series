@@ -1,0 +1,4 @@
+# Pressgres Gutenberg source patch series (ILLUSTRATIVE DEMO).
+# Applied to Gutenberg SOURCE at the SHA pinned by wordpress-develop package.json; the
+# block-editor bundles are then rebuilt. Built wp-includes/js/dist output is never hand-edited.
+e89683de4b3997a730fa56fc3c15eb177e30e41aa6a5adbc65c2a80c86d6f9d4  0001-format-library-image-id-as-string.patch

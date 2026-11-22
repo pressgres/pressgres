@@ -1,0 +1,4 @@
+# Pressgres WordPress core patch series (ILLUSTRATIVE DEMO).
+# Format: <sha256>  <patch file>, applied in order. Regenerate hashes with `patchset lock`.
+71c9034c44c8c3047fc3d954519fc6cdeee735ca9e3bac8a1962a771d0eecaf8  0001-add-object-id-helper.patch
+a9ecc3c79d6181339ef385134eb38b81e3f2ba810a68d759fbfa3452cefbbccb  0002-post-ids-use-object-id-helper.patch
