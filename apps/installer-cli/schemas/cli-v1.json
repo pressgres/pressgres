@@ -1,0 +1,61 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Pressgres CLI result v1",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["schema", "command", "status", "exit_code", "data", "diagnostics", "correlation_id"],
+    "properties": {
+        "schema": {"const": "pressgres.cli/v1"},
+        "command": {
+            "type": ["string", "null"],
+            "minLength": 1,
+            "description": "Canonical command name, or null when no command was resolved."
+        },
+        "status": {"enum": ["ok", "error"]},
+        "exit_code": {"type": "integer", "minimum": 0, "maximum": 10},
+        "data": {"type": "object", "description": "Command-specific result data."},
+        "diagnostics": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                    "code", "exit_code", "message", "remediation", "correlation_id",
+                    "origin", "sql_class", "source_location", "context"
+                ],
+                "properties": {
+                    "code": {"type": "string", "minLength": 1},
+                    "exit_code": {"type": "integer", "minimum": 1, "maximum": 10},
+                    "message": {"type": "string", "minLength": 1},
+                    "remediation": {"type": "string", "minLength": 1},
+                    "correlation_id": {"type": "string", "minLength": 1},
+                    "origin": {"type": ["string", "null"]},
+                    "sql_class": {"type": ["string", "null"]},
+                    "source_location": {"type": ["string", "null"]},
+                    "context": {
+                        "type": ["object", "array"],
+                        "items": false,
+                        "additionalProperties": {"type": ["boolean", "number", "string", "null"]}
+                    }
+                }
+            }
+        },
+        "correlation_id": {"type": ["string", "null"], "minLength": 1}
+    },
+    "if": {"properties": {"status": {"const": "ok"}}},
+    "then": {
+        "properties": {
+            "command": {"type": "string"},
+            "exit_code": {"const": 0},
+            "diagnostics": {"maxItems": 0},
+            "correlation_id": {"type": "null"}
+        }
+    },
+    "else": {
+        "properties": {
+            "exit_code": {"minimum": 1},
+            "diagnostics": {"minItems": 1},
+            "correlation_id": {"type": "string"}
+        }
+    }
+}

@@ -7,7 +7,7 @@
 | WordPress | **7.1**, exact pinned patch release/build and checksum | Next releases experimental until patchset revalidated | hard fail if no matching signed patch manifest |
 | PHP | **8.4.x**, supported upstream patch level | 8.5.x CI-candidate; 8.3 and older not supported by Pressgres MVP | check CLI and FPM versions/extensions |
 | PostgreSQL | **18.x** | 19.x candidate after tested; 17 and earlier reject for native `uuidv7()` default | require `uuidv7()` + extract version returns 7 |
-| Redis / Valkey | **Redis 7.4.x/8.x or Valkey 8.x** after CI validation of selected object-cache integration; licensing choice pending ADR-010 (Redis 7.4+ RSAL/SSPL, 8.x adds AGPL; Valkey BSD) | version policy frozen in release lockfile | verify INFO, TLS, auth and cache ops |
+| Redis / Valkey | **Valkey 9.2.x** default per ADR-0010, subject to CI validation of the object-cache integration | Standalone Redis 8.12.x candidate after CI validation | verify INFO, TLS, auth and cache ops |
 | Composer | **2.x** exact supported minor in CI | newer as validated | reject unsupported platform |
 | WP-CLI | **2.x** exact tested release in lockfile | other versions subject to integration tests | diagnostic warning/block as appropriate |
 | OS/arch | Linux x86_64, arm64 (CI gated) | Windows/macOS via DDEV locally | container/environment checks |
@@ -27,6 +27,8 @@ Note: WordPress 7.1 released Aug 19, 2026 according to official hosting compatib
 ## Exact-version strategy
 
 Installer downloads only release-manifest entries containing upstream WordPress archive hash, compatible patch series hash, Composer lock hash, tested PHP/PostgreSQL/Redis versions, and migration schema version. Unsupported combinations never downgrade to legacy integer IDs without operator choice and different profile. Candidate matrices stay explicitly `experimental`.
+
+The [CLI release manifest](../apps/installer-cli/release/manifest.json) reports the preview baseline of WordPress 7.1.5 with a pinned Gutenberg commit, PostgreSQL 18 as the floor, and Valkey 9.2.0 as the default under [ADR-0010](adr/0010-object-cache-backend.md). The CLI tests verify that these pins are reported in both formats. Managed runtime compatibility remains subject to the release gates.
 
 ## CI matrix
 

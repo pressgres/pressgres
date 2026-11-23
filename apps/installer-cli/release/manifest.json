@@ -1,0 +1,13 @@
+{
+    "wordpress_version": "7.1.5",
+    "wordpress_develop_commit": "984163c92ef66b6186538ecf01bacb97fc097541",
+    "gutenberg_commit": "89408c2b9bd944575dfa9039bc6870da1c8f56cb",
+    "postgresql_minimum_major": 18,
+    "valkey_default_version": "9.2.0",
+    "artifact_hashes": {
+        "wordpress_archive_sha256": null,
+        "patchset_sha256": null,
+        "gutenberg_archive_sha256": null,
+        "composer_lock_sha256": null
+    }
+}

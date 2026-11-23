@@ -8,5 +8,8 @@
         <testsuite name="Unit">
             <directory>tests/unit</directory>
         </testsuite>
+        <testsuite name="Installer CLI">
+            <directory>apps/installer-cli/tests</directory>
+        </testsuite>
     </testsuites>
 </phpunit>

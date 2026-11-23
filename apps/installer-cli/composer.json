@@ -1,0 +1,16 @@
+{
+    "name": "pressgres/installer-cli",
+    "description": "The Pressgres wps installer command-line application",
+    "type": "library",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": "^8.4",
+        "pressgres/contracts": "^0.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pressgres\\InstallerCli\\": "src/"
+        }
+    },
+    "bin": ["bin/wps"]
+}

@@ -2,5 +2,8 @@
 <ruleset name="Pressgres">
     <file>packages/contracts/src</file>
     <file>tests/unit</file>
+    <file>apps/installer-cli/bin/wps</file>
+    <file>apps/installer-cli/src</file>
+    <file>apps/installer-cli/tests</file>
     <rule ref="PSR12"/>
 </ruleset>

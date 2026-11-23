@@ -1,0 +1,12 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+use Pressgres\InstallerCli\Application;
+use Pressgres\InstallerCli\Commands\VersionCommand;
+
+require $_composer_autoload_path ?? dirname(__DIR__, 3) . '/vendor/autoload.php';
+
+$application = new Application(new VersionCommand(dirname(__DIR__) . '/release/manifest.json'));
+exit($application->run(array_slice($argv ?? [], 1), STDOUT, STDERR)->value);

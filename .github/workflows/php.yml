@@ -28,6 +28,7 @@ jobs:
           install -m 0755 /tmp/composer.phar /usr/local/bin/composer
       - run: composer validate --strict
       - run: composer validate --strict packages/contracts/composer.json
+      - run: composer validate --strict apps/installer-cli/composer.json
       - run: composer install --no-interaction --prefer-dist --no-progress
       - run: composer check-platform-reqs
       - run: composer audit

@@ -5,9 +5,11 @@
     "license": "GPL-2.0-or-later",
     "require": {
         "php": "^8.4",
-        "pressgres/contracts": "^0.1"
+        "pressgres/contracts": "^0.1",
+        "pressgres/installer-cli": "0.1.0"
     },
     "require-dev": {
+        "justinrainbow/json-schema": "6.14.0",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^12.5",
         "squizlabs/php_codesniffer": "^4.0"
@@ -21,6 +23,17 @@
                 "reference": "config",
                 "versions": {
                     "pressgres/contracts": "0.1.0"
+                }
+            }
+        },
+        {
+            "type": "path",
+            "url": "apps/installer-cli",
+            "options": {
+                "symlink": true,
+                "reference": "config",
+                "versions": {
+                    "pressgres/installer-cli": "0.1.0"
                 }
             }
         }
