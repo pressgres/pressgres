@@ -1,0 +1,85 @@
+flowchart LR
+    subgraph callers["B1 · Client trust boundary"]
+        admin["Site administrators"]
+        rest["REST clients"]
+    end
+
+    subgraph automation["B8 · Automation authority"]
+        ai["AI agents and bots"]
+        review["Maintainer approval"]
+    end
+
+    subgraph inputs["B6 · External artifacts"]
+        upstream["WordPress and Gutenberg refs"]
+        packages["Composer, npm and base images"]
+        pluginZip["Plugin artifacts"]
+    end
+
+    subgraph release["B6 · CI and release trust boundary"]
+        build["Unprivileged build and validation"]
+        patches["Locked WordPress and Gutenberg patch series"]
+        signer["Protected release signing"]
+    end
+
+    subgraph control["B2 · Installer and migration authority"]
+        installer["wps installer and CLI"]
+        migrationSecrets["Migrator credentials"]
+        crosswalk[("Restricted UUID crosswalk")]
+    end
+
+    subgraph site["B1/B4 · Production application"]
+        ingress["HTTPS ingress"]
+        runtime["PHP-FPM and approved WordPress code"]
+        uploads[("Writable uploads")]
+    end
+
+    subgraph storage["B2/B3/B4 · Data services"]
+        pg[("PostgreSQL: migrator, runtime, backup roles")]
+        cache[("Private Redis or Valkey object cache")]
+    end
+
+    subgraph test["B5 · Disposable sandbox"]
+        sandbox["Activation worker"]
+        disposable[("Fixture PostgreSQL: runtime DML")]
+        observations["Sandbox observations"]
+    end
+
+    subgraph recovery["B7 · Recovery and diagnostics"]
+        backup["Backup and restore worker"]
+        backups[("Encrypted DB and media backups")]
+        audit[("Restricted audit and diagnostics")]
+    end
+
+    admin -->|"Session and admin requests"| ingress
+    rest -->|"API requests and credentials"| ingress
+    ingress <-->|"Authenticated application traffic"| runtime
+    runtime <-->|"Runtime role · DML"| pg
+    runtime <-->|"Namespaced cache traffic"| cache
+    runtime <-->|"Media I/O"| uploads
+
+    ai -->|"Draft patches, manifests and plans"| build
+    ai -->|"Requests human decision"| review
+    review -->|"Approves exact release digest"| signer
+    review -->|"Approves migration plan"| installer
+
+    upstream -->|"Pinned refs and digests"| build
+    packages -->|"Lockfiles and image digests"| build
+    patches -->|"Ordered patches and pre/post-image checks"| build
+    build -->|"Candidate digest and test evidence"| signer
+    signer -->|"Signed release manifest and artifacts"| installer
+    migrationSecrets -->|"Deploy-time credential only"| installer
+    installer <-->|"Reviewed schema migration · migrator role"| pg
+    installer <-->|"Typed import mapping"| crosswalk
+    installer -->|"Sealed code and runtime config"| runtime
+
+    pluginZip -->|"Quarantined artifact by digest"| sandbox
+    sandbox <-->|"Fixture runtime role only"| disposable
+    sandbox -->|"Events and SQL evidence"| observations
+    observations -->|"Bounded test evidence"| build
+    build -->|"Candidate plugin approval evidence"| review
+
+    pg -->|"Backup role"| backup
+    uploads -->|"Matching media snapshot"| backup
+    backup <-->|"Backup and verified restore evidence"| backups
+    installer -->|"Redacted deploy and migration events"| audit
+    runtime -->|"Redacted request and SQL events"| audit
