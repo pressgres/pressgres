@@ -10,7 +10,9 @@ name: ${COMPOSE_PROJECT_NAME:-pressgres-dev}
 
 services:
   postgres:
-    image: postgres:18.7-alpine3.24@sha256:0115267ab5a509022df9319c77be365cef335adb71556c75f60f5360ee247e71
+    # PG_IMAGE overrides the server image for exploratory CI cells only
+    # (I-011, e.g. PostgreSQL 19). Leave it unset for normal local use.
+    image: ${PG_IMAGE:-postgres:18.7-alpine3.24@sha256:0115267ab5a509022df9319c77be365cef335adb71556c75f60f5360ee247e71}
     environment:
       POSTGRES_USER: ${PG_SUPERUSER:-postgres}
       POSTGRES_PASSWORD: ${PG_SUPERUSER_PASSWORD:?set PG_SUPERUSER_PASSWORD in .env}
@@ -20,7 +22,7 @@ services:
       WPS_MIGRATOR_PASSWORD: ${WPS_MIGRATOR_PASSWORD:?set WPS_MIGRATOR_PASSWORD in .env}
       WPS_RUNTIME_PASSWORD: ${WPS_RUNTIME_PASSWORD:?set WPS_RUNTIME_PASSWORD in .env}
     volumes:
-      # PostgreSQL 18 images keep PGDATA under /var/lib/postgresql/18/docker.
+      # PostgreSQL 18+ images keep PGDATA under /var/lib/postgresql/<major>/docker.
       - pgdata:/var/lib/postgresql
       - ./docker/postgres/initdb:/docker-entrypoint-initdb.d:ro
     ports:

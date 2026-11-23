@@ -7,6 +7,8 @@
 #
 #   docker/smoke.sh                  # build, check, tear down
 #   KEEP_STACK=1 docker/smoke.sh     # leave the stack running for debugging
+#   PG_IMAGE=postgres:19.0-alpine3.24@sha256:... docker/smoke.sh
+#                                    # exploratory server image (CI matrix, I-011)
 #
 # A local .env is ignored; your dev stack (project pressgres-dev) is untouched.
 set -euo pipefail
@@ -54,6 +56,10 @@ trap teardown EXIT
 echo "== versions"
 docker version --format 'docker {{.Server.Version}}'
 docker compose version
+
+if [[ -n "${PG_IMAGE:-}" ]]; then
+  echo "== PG_IMAGE override (exploratory, not a supported version): $PG_IMAGE"
+fi
 
 echo "== build and start ($project)"
 compose up -d --build --wait --wait-timeout 180

@@ -32,9 +32,24 @@ The [CLI release manifest](../apps/installer-cli/release/manifest.json) reports 
 
 ## CI matrix
 
-- Contracts checks cover PHP 8.4.27, canonical UUIDv7 text handling and CLI error mapping. Runtime support still depends on the integration and release gates below.
+The matrix has two tiers (I-011, [ADR-0006](adr/0006-version-policy.md)). **Required** cells block merges. **Exploratory** cells run the same checks with `continue-on-error`, so they never block. A green exploratory cell is a signal, not support: a version moves from candidate to supported only when the full ADR-0006 gate set passes on it.
+
+| Workflow | Cell | Tier | Images (digest-pinned) | Checks |
+|---|---|---|---|---|
+| `php.yml` | `checks` | required | `php:8.4.27-cli-bookworm` | Composer validate, install, platform reqs, audit, cs, analyse, test |
+| `php.yml` | `checks (exploratory, PHP 8.5)` | exploratory | `php:8.5.13-cli-bookworm` | same as required |
+| `local-stack.yml` | `Compose smoke (PHP 8.4, PostgreSQL 18, Valkey 9.2)` | required | `postgres:18.7-alpine3.24`, `valkey/valkey:9.2.0-alpine3.24`, PHP 8.4.28 FPM | `docker/smoke.sh` |
+| `local-stack.yml` | `Compose smoke (exploratory, PostgreSQL 19)` | exploratory | `postgres:19.0-alpine3.24` via `PG_IMAGE`, rest as required | `docker/smoke.sh` |
+
+Each workflow ends with a summary job that writes a table of every cell, its tier and its outcome to the run's job summary. The required cells keep their original job names, so existing status checks still match.
+
+To run the exploratory server locally, set `PG_IMAGE` (unset means the `compose.yaml` default): `PG_IMAGE=postgres:19.0-alpine3.24@sha256:8b0ff4cdf221f0c53d7fcda681d3b461be725c492cd881c5ec9c0ad25023f188 docker/smoke.sh`. As of 2026-11-23 the PHP 8.5.13 Composer checks and the PostgreSQL 19.0 smoke both pass locally. PHP 8.5 and PostgreSQL 19 remain candidates.
+
+Planned scope beyond the current matrix:
+
+- Contracts checks cover canonical UUIDv7 text handling and CLI error mapping. Runtime support still depends on the integration and release gates below.
 - Required: WP 7.1 pinned x PHP 8.4 x PG 18 x supported Redis release on x86_64; repeat on arm64 before claiming arm64.
-- Exploratory: PHP 8.5, PG 19 and next WP line in non-release jobs.
+- Exploratory: the next WP line in non-release jobs, alongside PHP 8.5 and PG 19.
 - Unit: native SQL/UUID, adapter compiler, format semantics, config schema.
 - Integration: real PG roles, TLS, Redis, DB drop-in, wpdb compatibility, schema migration.
 - E2E: site install, users/posts/taxonomy/comments/media, Gutenberg, REST, plugin lifecycle, upgrade and backup restore.
