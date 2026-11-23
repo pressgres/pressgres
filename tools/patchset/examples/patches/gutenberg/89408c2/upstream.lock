@@ -1,0 +1,7 @@
+upstream=gutenberg
+version=89408c2b9bd944575dfa9039bc6870da1c8f56cb
+source_ref=89408c2b9bd944575dfa9039bc6870da1c8f56cb
+tree_root=./ (repository root, excluding .git and node_modules)
+tree_manifest_sha256=b2cc1ed038ae7a850a26669aa3f503ab468e60daaadddd757e0e488190eb3257
+tree_file_count=12296
+patched_tree_manifest_sha256=146fb1fbc28f2f2898bece886351287f5b93f0bc958f63a4338f81e3317d9e8e

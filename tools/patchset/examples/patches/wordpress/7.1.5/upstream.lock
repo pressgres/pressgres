@@ -1,0 +1,7 @@
+upstream=wordpress-develop
+version=7.1.5
+source_ref=984163c92ef66b6186538ecf01bacb97fc097541
+tree_root=src/
+tree_manifest_sha256=9b52b38a786cea2d5463655f3b5c8385029dab2ad57da2d120e6867ee401ae7b
+tree_file_count=3798
+patched_tree_manifest_sha256=ab1d48c96c837290aae1d657df19a139dc1e7fa95f71553a21cd410eab159a81
