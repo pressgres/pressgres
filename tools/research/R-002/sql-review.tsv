@@ -1,0 +1,79 @@
+# decision	src path	line	function	statement kind	table(s)	identity sensitivity	notes
+exclude	src/wp-admin/install-helper.php	21	-	-	-	-	Documentation example.
+exclude	src/wp-admin/install-helper.php	51	-	-	-	-	Parameter docblock.
+exclude	src/wp-admin/includes/upgrade.php	2681	-	-	-	-	Parameter docblock.
+exclude	src/wp-admin/includes/upgrade.php	2964	-	-	-	-	Recognizer; execution sink is line 3353.
+exclude	src/wp-admin/includes/upgrade.php	2972	-	-	-	-	Recognizer; execution sink is line 3353.
+exclude	src/wp-admin/includes/upgrade.php	2991	-	-	-	-	Filter docblock.
+exclude	src/wp-includes/ms-site.php	830	-	-	-	-	Hook docblock.
+include	src/wp-admin/includes/upgrade.php	3237	dbDelta	ALTER TABLE	$table	context	CHANGE COLUMN current-name full-desired-column-definition; generated when type differs.
+include	src/wp-admin/includes/upgrade.php	3248	dbDelta	ALTER TABLE	$table	context	ALTER COLUMN current-name SET DEFAULT 'desired-value'; generated for differing quoted defaults.
+include	src/wp-admin/includes/upgrade.php	3264	dbDelta	ALTER TABLE	$table	context	ADD COLUMN desired-field-definition.
+include	src/wp-admin/includes/upgrade.php	3341	dbDelta	ALTER TABLE	$table	context	ADD normalized-index-definition.
+include	src/wp-admin/includes/upgrade.php	3027	dbDelta	DESCRIBE	$table	no	Missing or uninspectable table leaves CREATE queued.
+include	src/wp-admin/includes/upgrade.php	3270	dbDelta	SHOW INDEX	$table	no	Index metadata matching ignores subparts.
+include	src/wp-admin/includes/upgrade.php	3353	dbDelta	DYNAMIC SQL	caller or schema tables	context	Executes retained CREATE TABLE / CREATE DATABASE, generated ALTER, accepted INSERT and UPDATE plus hook-supplied statements.
+include	src/wp-admin/includes/upgrade.php	2687	maybe_create_table	SHOW TABLES	$table_name	no	SHOW TABLES LIKE with escaped pattern, then exact comparison before and after caller DDL.
+include	src/wp-admin/includes/upgrade.php	2694	maybe_create_table	CALLER DDL	$table_name	context	Executes $create_ddl on a miss.
+include	src/wp-admin/includes/upgrade.php	2767	maybe_add_column	DESCRIBE	$table_name	no	DESC first column and exact name comparison before and after caller DDL.
+include	src/wp-admin/includes/upgrade.php	2774	maybe_add_column	CALLER DDL	$table_name	context	Executes $create_ddl on a miss.
+include	src/wp-admin/install-helper.php	57	maybe_create_table	SHOW TABLES	$table_name	no	Legacy variant enumerates SHOW TABLES before and after caller DDL.
+include	src/wp-admin/install-helper.php	65	maybe_create_table	CALLER DDL	$table_name	context	Conditional legacy definition; executes $create_ddl on a miss.
+include	src/wp-admin/install-helper.php	95	maybe_add_column	DESCRIBE	$table_name	no	Reads DESC first column before and after caller DDL.
+include	src/wp-admin/install-helper.php	103	maybe_add_column	CALLER DDL	$table_name	context	Conditional legacy definition; executes $create_ddl on a miss.
+include	src/wp-admin/install-helper.php	133	maybe_drop_column	DESCRIBE	$table_name	no	Reads DESC first column before and after caller DDL.
+include	src/wp-admin/install-helper.php	138	maybe_drop_column	CALLER DDL	$table_name	context	Executes $drop_ddl when column exists.
+include	src/wp-admin/install-helper.php	189	check_column	DESCRIBE	$table_name	no	Checks Field, Type, Null, Key, Default and Extra against caller criteria.
+include	src/wp-admin/includes/upgrade.php	2799	maybe_convert_table_to_utf8mb4	SHOW FULL COLUMNS	$table	no	Checks Collation for each column.
+include	src/wp-admin/includes/upgrade.php	2815	maybe_convert_table_to_utf8mb4	SHOW TABLE STATUS	$table	no	Checks table Collation before native charset conversion.
+include	src/wp-admin/maint/repair.php	111	(file scope)	CHECK TABLE	core and filtered tables	no	MySQL catalog/maintenance surface.
+include	src/wp-admin/maint/repair.php	121	(file scope)	REPAIR TABLE	core and filtered tables	no	MySQL maintenance surface after failed check.
+include	src/wp-admin/maint/repair.php	143	(file scope)	OPTIMIZE TABLE	core and filtered tables	no	MySQL maintenance surface when enabled.
+include	src/wp-includes/SimplePie/src/Cache/MySQL.php	90	__construct	CREATE TABLE	cache_data	no	Bundled dependency, direct PDO MySQL path outside WordPress core schema.
+include	src/wp-includes/SimplePie/src/Cache/MySQL.php	99	__construct	CREATE TABLE	items	no	Bundled dependency, direct PDO MySQL path outside WordPress core schema.
+include	src/wp-admin/includes/schema.php	591	populate_options	SELECT	options	no	SELECT option_name FROM options WHERE option_name IN (default/override names).
+include	src/wp-admin/includes/schema.php	616	populate_options	INSERT	options	yes	Multi-row INSERT into (option_name, option_value, autoload); omits generated option_id; some named values contain numeric entity references.
+include	src/wp-admin/includes/schema.php	621	populate_options	UPDATE or UPSERT	options	no	Update home through option API if blank.
+include	src/wp-admin/includes/schema.php	704	populate_options	DELETE	options	no	Delete obsolete names using delete_option().
+include	src/wp-admin/includes/schema.php	708	populate_options	DELETE	options	no	DELETE WHERE option_name REGEXP legacy Magpie key pattern.
+include	src/wp-admin/includes/schema.php	711	populate_options	DELETE	options	no	Calls delete_expired_transients(true); MySQL multi-table DELETE of key/timeout pairs.
+include	src/wp-admin/includes/schema.php	738	populate_roles	UPDATE or UPSERT	options	no	Persist role definitions as one autoloaded serialized option.
+include	src/wp-admin/includes/upgrade.php	79	wp_install	CALL	options	yes	Calls populate_options, then populate_roles; seeds current db_version.
+include	src/wp-admin/includes/upgrade.php	106	wp_install	SELECT	users	no	Look up existing user by login through username_exists().
+include	src/wp-admin/includes/upgrade.php	114	wp_install	INSERT	users; usermeta	yes	wp_create_user and default_password_nag; password-provided branch also creates the user.
+include	src/wp-admin/includes/upgrade.php	128	wp_install	META WRITE	usermeta	yes	WP_User::set_role updates capabilities and user level using generated user ID.
+include	src/wp-admin/includes/upgrade.php	132	wp_install	UPDATE	users	yes	Update new user URL by ID.
+include	src/wp-admin/includes/upgrade.php	188	wp_install_defaults	INSERT	terms	yes	Explicit term_id=1; term_group=0 is numeric.
+include	src/wp-admin/includes/upgrade.php	197	wp_install_defaults	INSERT	term_taxonomy	yes	Uses term_id=1 and parent=0; reads insert_id at line 207.
+include	src/wp-admin/includes/upgrade.php	239	wp_install_defaults	INSERT	posts	yes	First post; omits PK; uses generated admin ID and a numeric GUID suffix.
+include	src/wp-admin/includes/upgrade.php	264	wp_install_defaults	INSERT	term_relationships	yes	Connects object_id=1 with generated term_taxonomy_id.
+include	src/wp-admin/includes/upgrade.php	293	wp_install_defaults	INSERT	comments	yes	First comment with comment_post_ID=1.
+include	src/wp-admin/includes/upgrade.php	343	wp_install_defaults	INSERT	posts	yes	Sample page, assumed ID 2.
+include	src/wp-admin/includes/upgrade.php	364	wp_install_defaults	INSERT	postmeta	yes	Template metadata with post_id=2.
+include	src/wp-admin/includes/upgrade.php	388	wp_install_defaults	INSERT	posts	yes	Optional privacy page, assumed ID 3.
+include	src/wp-admin/includes/upgrade.php	410	wp_install_defaults	INSERT	postmeta	yes	Privacy page template metadata with post_id=3.
+include	src/wp-admin/includes/upgrade.php	418	wp_install_defaults	UPDATE or UPSERT	options	yes	Store hardcoded privacy page ID 3.
+include	src/wp-admin/includes/upgrade.php	451	wp_install_defaults	META WRITE	usermeta	yes	Set show_welcome_panel for the admin ID; value itself is numeric.
+include	src/wp-admin/includes/upgrade.php	689	wp_upgrade	DELETE	options	no	Clear core block CSS transient via delete_transient().
+include	src/wp-admin/includes/upgrade.php	897	upgrade_all	UPDATE or UPSERT	options	no	Persist db_version and db_upgraded using option APIs.
+include	src/wp-admin/includes/upgrade.php	2326	upgrade_590	UPDATE or UPSERT	options	no	Boundary prior to stored revision 51917: filter false cron entries and update cron option.
+include	src/wp-admin/includes/upgrade.php	2343	upgrade_600	SELECT and option write	users; options	no	COUNT(ID) and persist user_count; requires correct ID casing but no numeric values.
+include	src/wp-admin/includes/upgrade.php	2363	upgrade_630	DELETE and UPSERT	options	no	Recreate existing can_compress_scripts as autoloaded on single site.
+include	src/wp-admin/includes/upgrade.php	2383	upgrade_640	UPDATE or UPSERT	options	no	Set wp_attachment_pages_enabled; remove old cron hook via option APIs.
+include	src/wp-admin/includes/upgrade.php	2411	upgrade_650	SELECT	options	no	Select autoload=yes theme_mods_ names, excluding active theme with escaped LIKE pattern.
+include	src/wp-admin/includes/upgrade.php	2418	upgrade_650	UPDATE	options	no	Autoload helper reads matching names and sets autoload=off.
+include	src/wp-admin/includes/upgrade.php	2449	upgrade_670	UPDATE	options	no	Autoload helper reads named options and sets autoload=off.
+include	src/wp-admin/includes/upgrade.php	2484	upgrade_682	UPDATE or UPSERT	options	no	Normalize Ping-O-Matic and Twingly URLs to HTTPS, persist ping_sites.
+include	src/wp-admin/includes/upgrade.php	2502	upgrade_700	UPDATE	usermeta	no	UPDATE SET meta_value='modern' WHERE meta_key='admin_color' AND meta_value='fresh'.
+include	src/wp-admin/includes/upgrade.php	2876	__get_option	SELECT	options	no	Read option_value by option_name; used by db_version checks.
+include	src/wp-admin/includes/upgrade.php	3700	maybe_disable_automattic_widgets	UPDATE or UPSERT	options	no	Remove legacy widgets.php entry from active_plugins if present.
+include	src/wp-admin/includes/upgrade.php	3717	maybe_disable_link_manager	SELECT	links	no	SELECT link_id FROM links LIMIT 1; tests row presence via truthiness.
+include	src/wp-admin/includes/upgrade.php	3718	maybe_disable_link_manager	UPDATE or UPSERT	options	no	Disable link manager if enabled and no links exist.
+include	src/wp-admin/includes/upgrade.php	3736	pre_schema_upgrade	DELETE	options	yes	Historical MySQL joined delete retains greatest numeric option_id per option_name below revision 11557.
+include	src/wp-includes/option.php	444	wp_set_option_autoload_values	SELECT	options	no	SELECT option_name by autoload != target and option_name in list.
+include	src/wp-includes/option.php	463	wp_set_option_autoload_values	UPDATE	options	no	UPDATE SET autoload=target WHERE option_name IN (...).
+include	src/wp-includes/option.php	963	update_option	UPDATE	options	no	Update option_value and optional autoload by option_name; existing-value checks before write.
+include	src/wp-includes/option.php	1142	add_option	UPSERT	options	no	MySQL INSERT ON DUPLICATE KEY UPDATE by unique option_name; generated PK not read by add_option.
+include	src/wp-includes/option.php	1229	delete_option	DELETE	options	no	Delete by option_name; lookup/cache updates around the write.
+include	src/wp-includes/user.php	1547	wp_update_user_counts	SELECT	users	no	SELECT COUNT(ID) as c FROM users.
+include	src/wp-includes/user.php	1554	wp_update_user_counts	UPDATE or UPSERT	options	no	Single-site user_count through update_network_option.
