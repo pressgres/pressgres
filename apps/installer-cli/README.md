@@ -7,7 +7,7 @@ apps/installer-cli/bin/wps version
 vendor/bin/wps version --format=json --no-interaction
 ```
 
-The package uses a small PHP dispatcher for one read-only command and two global options. This keeps the runtime dependency limited to the shared Pressgres contracts while the command set is small.
+The dispatcher also provides `init` and `config validate`. See the [tested configuration commands](../../docs/03-installer-cli.md#tested-configuration-commands) for usage.
 
 The [CLI result schema](schemas/cli-v1.json) covers every command and usage failure. JSON mode writes one result to stdout for any application exit code. Human mode writes success to stdout and diagnostics to stderr. `--format=human` is the default. Put global options before or after the command. `version` never prompts and accepts `--no-interaction`.
 

@@ -1,10 +1,11 @@
-# Sample only; no implementation shipped with this archive.
+# Pressgres preview configuration for PostgreSQL 18 and native UUIDv7.
+# Keep this file outside the webroot. Passwords use env:NAME or file:/absolute/path.
 schema_version: '1.0'
 project:
   name: example-site
   environment: production
 wordpress:
-  version: '7.1' # release manifest will pin exact patch release + hash
+  version: '7.1.5' # Preview pin from the CLI release manifest.
   core_mode: managed_uuid
   auto_updates: false
   multisite: false
@@ -17,20 +18,24 @@ database:
   engine: postgresql
   minimum_version: '18'
   driver: pdo_pgsql
-  host: '${WPS_DB_HOST}'
-  name: '${WPS_DB_NAME}'
-  runtime_user: '${WPS_DB_USER}'
-  password: '${WPS_DB_PASSWORD}'
+  host: postgres.example.test
+  name: pressgres
+  runtime_user: wps_runtime
+  password: 'env:WPS_RUNTIME_PASSWORD'
+  # Supply migrator credentials only to the installer process.
+  migrator_user: wps_migrator
+  migrator_password: 'env:WPS_MIGRATOR_PASSWORD'
   sslmode: verify-full
-  sslrootcert: '${WPS_PG_CA_FILE}'
+  sslrootcert: /etc/pressgres/postgres-ca.pem
   unsupported_sql: reject
 redis:
   enabled: true
+  backend: valkey
   driver: phpredis
-  host: '${WPS_REDIS_HOST}'
-  password: '${WPS_REDIS_PASSWORD}'
+  host: valkey.example.test
+  password: 'env:VALKEY_PASSWORD'
   tls: true
-  prefix: 'pressgres:prod:site-1:'
+  prefix: 'pressgres:prod:site-1:' # Choose a unique namespace per site.
   fail_policy: request_local_cache
 security:
   profile: hardened
