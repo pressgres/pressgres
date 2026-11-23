@@ -6,5 +6,5 @@
     "MD060": false,
     "MD033": false
   },
-  "ignores": ["node_modules/**", ".github/PULL_REQUEST_TEMPLATE.md"]
+  "ignores": ["node_modules/**", ".github/PULL_REQUEST_TEMPLATE.md", "prototypes/*/build/**"]
 }
