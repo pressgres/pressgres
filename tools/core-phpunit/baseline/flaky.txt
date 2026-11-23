@@ -1,0 +1,6 @@
+# IDs ignored by ratchet.py in both directions (never a regression, never "newly passing").
+# One comment line per entry: evidence and reason. Remove the entry once the cause is fixed.
+# 2026-11-23 local PG-C runs: failure in run 1, pass in run 2. Two wp_navigation posts created in the
+# same second; the fallback picks "most recent" by post_date, so the tie is broken by row order
+# (integer ID on MySQL, not guaranteed with the R-003 UUID schema).
+WP_Navigation_Fallback_Test::test_should_return_the_most_recently_created_navigation_menu

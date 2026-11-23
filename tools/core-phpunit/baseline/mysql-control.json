@@ -1,0 +1,22 @@
+{
+  "comparable_pass_rate": 100.0,
+  "configuration": "MySQL 8.4.13 control, stock WordPress, full default suite",
+  "control_passing": 30801,
+  "error": 0,
+  "expected_pass": 30801,
+  "failure": 1,
+  "generated_from": "local run mysql-control",
+  "generated_utc": "2026-11-23T15:44:19Z",
+  "host": "Docker linux/aarch64 VM on Apple Silicon (local)",
+  "mysql": "8.4.13",
+  "pass": 30868,
+  "pass_rate": 99.9,
+  "php": "8.4.28",
+  "phpunit": "9.6.39",
+  "skipped": 31,
+  "tests": 30900,
+  "wordpress_develop": {
+    "commit": "984163c92ef66b6186538ecf01bacb97fc097541",
+    "tag": "7.1.5"
+  }
+}

@@ -1,4 +1,4 @@
-# Core PHPUnit harness (R-009)
+# Core PHPUnit harness (R-009, I-010)
 
 Runs the upstream `wordpress-develop` 7.1.5 PHPUnit suite (single site, default groups from `phpunit.xml.dist`) in disposable containers against either:
 
@@ -18,6 +18,8 @@ No WordPress or Composer vendor code is committed. The pinned source tree is mou
 | PHPUnit / polyfills | `phpunit/phpunit` 9.6.39, `yoast/phpunit-polyfills` 1.1.5 (`composer.lock` in this directory) |
 | MySQL control | `mysql:8.4.13` (tmpfs datadir, `innodb-flush-log-at-trx-commit=2`) |
 | PostgreSQL | `postgres:18.6-alpine` (tmpfs datadir, `fsync=off`) |
+
+Base images are pinned by tag and multi-arch index digest in `Dockerfile` and `compose.yaml`.
 | WordPress | `wordpress-develop` 7.1.5 checkout (`WP_DEVELOP_REF`) |
 
 Compose project name `pressgres-r009`; host ports bound to `127.0.0.1` only: MySQL `53307`, PostgreSQL `55434`.
@@ -84,6 +86,79 @@ python3 summarize.py results/pgsql-noleak/junit.xml --label pgsql-C --src "$WP_D
 Output: overall counts (`tests pass failure error skipped warnings pass_rate pass_rate_excl_skipped test_seconds`); with `--control-junit` the *comparable pass rate* (control-passing test IDs that also pass here); with `--fail-csv`/`--sig-csv` the bucket counts. `--baseline` marks tests that also fail in the MySQL control as `harness/environment`. Buckets (`uuid-identity`, `sql-dialect`, `schema/ddl`, `harness/environment`, `unknown`) come from regex rules over the first database error in each failure (`BUCKET_RULES`); `bucket_inferred` lets an `unknown` test inherit its class's most common bucket. See the report for the measured accuracy.
 
 PHPUnit 9 can write characters that XML 1.0 forbids (for example U+FFFE) into JUnit; `summarize.py` strips them before parsing.
+
+## CI (I-010)
+
+Workflow: `.github/workflows/core-phpunit.yml`. Triggers: pull requests touching `tools/core-phpunit/**`, `prototypes/**`, `patches/**`, `packages/**` or the workflow itself; pushes to `main` on the same paths; weekly schedule; `workflow_dispatch`.
+
+| Job | When | What |
+|---|---|---|
+| `ratchet-unit` | always | `python3 -m unittest discover -s tools/core-phpunit/tests` (fixture JUnit files under `tests/fixtures/`) |
+| `pgsql` | always | PG-C: PostgreSQL 18.6 + R-003 prototype (`prototypes/r-003`) behind the harness wrapper, prototype schema pre-created, `Tests_Admin_IncludesSchema` excluded. Gate: the ratchet |
+| `mysql-control` | weekly schedule, or `workflow_dispatch` with `mysql_control: true` | MySQL 8.4.13 on stock WordPress, checked against `baseline/mysql-control-pass.txt` to detect environmental drift |
+
+`pgsql` steps: checkout; fetch `wordpress-develop` tag `7.1.5` shallowly and fail unless it resolves to `984163c92ef66b6186538ecf01bacb97fc097541`; build the runner image (GitHub Actions cache); `run.sh prepare`; `run.sh test pgsql pgsql-c --filter '/^(?!Tests_Admin_IncludesSchema::)/'` with a 30 min step timeout; `summarize.py` CSVs; `ratchet.py check`, which writes the job summary; upload artifact `core-phpunit-pgsql` (90 days); `run.sh down`.
+
+Artifact `core-phpunit-pgsql`: `junit.xml.gz`, `phpunit.log.gz`, `meta.env.gz`, `r009-shim.log.gz`, `by-directory.csv`, `by-group.csv`, `failures.csv`, `signatures.csv`, `run-summary.csv` (one trend row), `newly-passing.txt`, `regressions.txt`, `expected-pass.candidate.txt`, `baseline.candidate.json`.
+
+### The ratchet is the gate, the pass rate is a trend
+
+Per ADR-0006 and R-009, CI fails on regressions, not below a percentage. `ratchet.py check` (stdlib only) fails when:
+
+1. the bootstrap did not reach PHPUnit: no JUnit file, invalid XML or 0 test cases (PG-A style). The job summary shows the tail of `phpunit.log`;
+2. the JUnit test count is more than 1 % below `baseline/baseline.json` `tests` (data-provider or fatal collapse);
+3. any ID in `baseline/expected-pass.txt` is not passing: failure, error, skipped or missing.
+
+Newly passing tests never fail the job. They are listed in the job summary and in `newly-passing.txt`. IDs in `baseline/flaky.txt` (tests shown to be nondeterministic, each with its evidence) are ignored in both directions.
+
+The job summary also reports pass/failure/error/skipped counts, the pass rate and the *comparable pass rate*: IDs passing on PostgreSQL divided by IDs passing in the MySQL control (`baseline/mysql-control-pass.txt`), each with the delta to `baseline/baseline.json`. On `main` these numbers (artifact `run-summary.csv`) are the published trend; they are not a threshold.
+
+Committed baseline (generated 2026-11-23 from two local PG-C runs and one MySQL control run on the pinned stack, Docker linux/aarch64):
+
+| Run | Tests (JUnit) | Pass | Failure | Error | Skipped | Pass rate | Comparable pass rate | Wall time |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| PG-C run 1 | 30 452 | 23 928 | 3 105 | 2 976 | 443 | 78.58 % | 77.47 % (23 861 / 30 801) | 550 s |
+| PG-C run 2 | 30 452 | 23 929 | 3 104 | 2 976 | 443 | 78.58 % | 77.47 % (23 862 / 30 801) | 497 s |
+| MySQL control | 30 900 | 30 868 | 1 | 0 | 31 | 99.90 % | 100 % | 450 s |
+
+These match R-009 exactly (same inputs: wordpress-develop `984163c`, R-003 hashes `2310bf9a…`/`ba580154…`/`d1ef3189…`). The only difference between the two PostgreSQL runs is `WP_Navigation_Fallback_Test::test_should_return_the_most_recently_created_navigation_menu` (two posts created in the same second, tie order not deterministic), now in `flaky.txt`. `expected-pass.txt` holds the 23 861 IDs passing in both runs. Wall times are higher than R-009's 375 s / 335 s because the host ran other containers.
+
+Baseline files (`baseline/`):
+
+| File | Content |
+|---|---|
+| `expected-pass.txt` | sorted `Class::name` IDs (as in JUnit, data-set names included; `\`, newline and CR escaped) that passed in every local generating run |
+| `baseline.json` | counts of the generating run, `comparable_pass_rate`, inputs (wordpress-develop commit, prototype hashes, images) |
+| `mysql-control-pass.txt`, `mysql-control.json` | the same for the MySQL control |
+| `flaky.txt` | IDs excluded from the ratchet, with a comment line per reason |
+
+An ID that occurs more than once (the `restapi-autosave` testsuite re-runs some tests) passes only if every occurrence passes.
+
+### Updating the baseline in the same PR
+
+When a change makes tests pass, ratchet them in the same PR:
+
+```bash
+# Either: download artifact core-phpunit-pgsql from the PR run and copy
+cp expected-pass.candidate.txt tools/core-phpunit/baseline/expected-pass.txt
+cp baseline.candidate.json     tools/core-phpunit/baseline/baseline.json
+
+# Or: run the CI configuration locally and regenerate (several JUnit files = intersection of passing IDs)
+cd tools/core-phpunit && ./run.sh prepare && PG_PROTOTYPE_DIR=$PWD/../../prototypes/r-003 PRESSGRES_QUERY_LOG=/dev/null \
+  ./run.sh test pgsql pgsql-c --filter '/^(?!Tests_Admin_IncludesSchema::)/' && cd ../..
+python3 tools/core-phpunit/ratchet.py update tools/core-phpunit/results/pgsql-c/junit.xml
+python3 tools/core-phpunit/ratchet.py update --merge results/a/junit.xml   # only add, never remove
+```
+
+Removing IDs (a deliberate regression, or a test deleted upstream after a WordPress update) is the same command without `--merge`; the diff of `expected-pass.txt` shows it for review. Check locally before pushing:
+
+```bash
+python3 tools/core-phpunit/ratchet.py check tools/core-phpunit/results/pgsql-c/junit.xml
+```
+
+### MySQL control
+
+Running MySQL on every PR would double the cost for a number that only changes with the environment, so the comparable pass rate uses the committed `mysql-control-pass.txt`. The weekly `mysql-control` job re-runs the control and ratchets it against that list; a failure there means the environment drifted (image, runner, upstream fetch) and blocks interpreting PostgreSQL deltas until fixed.
 
 ## Known environmental differences from upstream CI
 

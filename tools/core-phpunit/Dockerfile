@@ -2,8 +2,8 @@
 # PHP 8.4 CLI with the extensions the wordpress-develop suite expects
 # (gd is mandatory per tests/phpunit/includes/bootstrap.php) plus both
 # MySQL (control) and PostgreSQL (Pressgres prototype) client drivers.
-ARG PHP_IMAGE=php:8.4.28-cli-bookworm
-ARG COMPOSER_IMAGE=composer:2.11.2
+ARG PHP_IMAGE=php:8.4.28-cli-bookworm@sha256:85da896b3eeb8bcd83fe612e51a529b7d5983a1fab92ef5f63c7ac6e2842fc46
+ARG COMPOSER_IMAGE=composer:2.11.2@sha256:50ea4d33fdcde1adb0f045547295faa1548b33872e5f789dae5b02ce2fb5de93
 
 FROM ${COMPOSER_IMAGE} AS composer
 
