@@ -1,0 +1,36 @@
+-- R-003 prototype: minimum options so WordPress boots without running the
+-- MySQL-only installer (wp_install()/dbDelta are out of scope; see Q-003).
+-- Roles, the admin user, the default category and the application password
+-- are created through WordPress PHP APIs by scripts/setup.php.
+INSERT INTO wp_options (option_name, option_value, autoload) VALUES
+  ('siteurl', 'http://localhost:58080', 'on'),
+  ('home', 'http://localhost:58080', 'on'),
+  ('blogname', 'Pressgres R-003', 'on'),
+  ('blogdescription', 'UUIDv7 prototype', 'on'),
+  ('admin_email', 'admin@example.invalid', 'on'),
+  ('users_can_register', '0', 'on'),
+  ('start_of_week', '1', 'on'),
+  ('use_balanceTags', '0', 'on'),
+  ('use_smilies', '0', 'on'),
+  ('require_name_email', '1', 'on'),
+  ('comments_notify', '0', 'on'),
+  ('posts_per_rss', '10', 'on'),
+  ('rss_use_excerpt', '0', 'on'),
+  ('posts_per_page', '10', 'on'),
+  ('date_format', 'F j, Y', 'on'),
+  ('time_format', 'g:i a', 'on'),
+  ('permalink_structure', '', 'on'),
+  ('blog_charset', 'UTF-8', 'on'),
+  ('active_plugins', 'a:0:{}', 'on'),
+  ('template', 'twentytwentyfive', 'on'),
+  ('stylesheet', 'twentytwentyfive', 'on'),
+  ('timezone_string', 'UTC', 'on'),
+  ('gmt_offset', '0', 'on'),
+  ('show_on_front', 'posts', 'on'),
+  ('default_comment_status', 'closed', 'on'),
+  ('default_ping_status', 'closed', 'on'),
+  ('default_pingback_flag', '0', 'on'),
+  ('fresh_site', '0', 'on'),
+  ('WPLANG', '', 'on'),
+  ('db_version', '61833', 'on'),
+  ('initial_db_version', '61833', 'on');

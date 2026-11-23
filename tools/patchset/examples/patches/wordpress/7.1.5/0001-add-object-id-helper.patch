@@ -1,0 +1,56 @@
+Patch-Id: PG-WP-0001
+Subject: Add pressgres_object_id() helper and load it before post.php
+Upstream: wordpress-develop
+Upstream-Version: 7.1.5
+Upstream-Status: not-needed (Pressgres-specific)
+Author: Pressgres contributors
+Date: 2026-11-22
+License: GPL-2.0-or-later
+Tests: tests/phpunit/pressgres/ObjectIdTest.php (not part of demo)
+Description: ILLUSTRATIVE DEMO PATCH (R-005). Adds a placeholder UUID-aware ID normalizer.
+
+diff --git a/wp-includes/pressgres-object-id.php b/wp-includes/pressgres-object-id.php
+new file mode 100644
+index 0000000000000000000000000000000000000000..19af2c38c9e7b836e5257f7da4818d4bf89cb7dd
+--- /dev/null
++++ b/wp-includes/pressgres-object-id.php
+@@ -0,0 +1,27 @@
++<?php
++/**
++ * Pressgres object ID helper.
++ *
++ * ILLUSTRATIVE DEMO PATCH ONLY (R-005 patch-mechanism spike). This is not the
++ * Pressgres UUID implementation; the real helper is designed under ADR-002/U-001.
++ *
++ * This file was added by Pressgres on 2026-11-22. It is part of a modified
++ * version of WordPress and is distributed under the GNU General Public License,
++ * version 2 or (at your option) any later version.
++ *
++ * @package Pressgres
++ */
++
++/**
++ * Normalizes an object ID without casting UUIDs to integers.
++ *
++ * @param mixed $id Candidate object ID.
++ * @return string|int Lower-case UUID string, or absint() of the input for legacy callers.
++ */
++function pressgres_object_id( $id ) {
++	if ( is_string( $id ) && 1 === preg_match( '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $id ) ) {
++		return strtolower( $id );
++	}
++
++	return absint( $id );
++}
+diff --git a/wp-settings.php b/wp-settings.php
+index 29b7588b96b4fe7651a88e41bd90ef063b87f9be..b223704ab9d69e1cc0027baaaa4c799adb4e14ce 100644
+--- a/wp-settings.php
++++ b/wp-settings.php
+@@ -217,6 +217,7 @@ require ABSPATH . WPINC . '/general-template.php';
+ require ABSPATH . WPINC . '/link-template.php';
+ require ABSPATH . WPINC . '/author-template.php';
+ require ABSPATH . WPINC . '/robots-template.php';
++require ABSPATH . WPINC . '/pressgres-object-id.php'; // Pressgres: added 2026-11-22.
+ require ABSPATH . WPINC . '/post.php';
+ require ABSPATH . WPINC . '/class-walker-page.php';
+ require ABSPATH . WPINC . '/class-walker-page-dropdown.php';

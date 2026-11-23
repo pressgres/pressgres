@@ -1,0 +1,262 @@
+#!/usr/bin/env bash
+# Pressgres patchset tool (R-005 proof of concept).
+#
+# Applies a version-pinned, hash-locked series of git-format patches to a
+# pristine upstream tree and FAILS LOUDLY on anything other than an exact,
+# byte-for-byte expected application:
+#   - upstream tree manifest digest must match upstream.lock
+#   - every patch file must match its sha256 in `series`
+#   - every touched file must match the patch's recorded pre-image blob id
+#   - `git apply` must report no offset, fuzz or whitespace fix-ups
+#   - every touched file must match the patch's recorded post-image blob id
+#   - the patched tree manifest digest must match upstream.lock
+#
+# Subcommands:
+#   manifest     <tree>                 print sha256 manifest of a tree
+#   lock         <tree> <series-dir>    (maintainer) pin upstream + patched digests
+#   verify       <tree> <series-dir>    verify pristine tree + series hashes only
+#   apply        <tree> <series-dir>    verify, then apply strictly (in place)
+#   rebase-check <tree> <series-dir>    dry run against a different/new tree;
+#                                       classifies every patch, never modifies <tree>
+#
+# Requires: bash 3.2+, git, sha256sum or shasum. Illustrative; see README.md.
+
+set -euo pipefail
+export LC_ALL=C
+
+die() { printf 'FATAL: %s\n' "$*" >&2; exit 1; }
+info() { printf '%s\n' "$*"; }
+
+if command -v sha256sum >/dev/null 2>&1; then SHA256_CMD="sha256sum"; else SHA256_CMD="shasum -a 256"; fi
+sha256() { $SHA256_CMD "$@"; }
+sha256_of() { sha256 "$1" | awk '{print $1}'; }
+
+abspath() { (cd "$1" && pwd -P); }
+
+# Stop git from discovering an enclosing repository (the demo tree lives
+# inside the Pressgres worktree); git apply/hash-object then act on plain files.
+git_plain() {
+	local tree="$1"; shift
+	(cd "$tree" && GIT_CEILING_DIRECTORIES="$(dirname "$tree")" git "$@")
+}
+
+manifest() {
+	local tree; tree="$(abspath "$1")"
+	(cd "$tree" && find . -type f ! -name '*.rej' ! -name '*.orig' ! -name '.out' -print0 | sort -z | xargs -0 $SHA256_CMD)
+}
+
+tree_digest() {
+	local tree="$1" tmp
+	tmp="$(mktemp)"
+	manifest "$tree" > "$tmp"
+	printf '%s %s\n' "$(sha256_of "$tmp")" "$(wc -l < "$tmp" | tr -d ' ')"
+	rm -f "$tmp"
+}
+
+lock_get() {
+	local key="$1" file="$2"
+	awk -F= -v k="$key" '$1==k {sub(/^[^=]*=/, ""); print; exit}' "$file"
+}
+
+# Print "<patchfile>" for each entry in series (order matters).
+series_entries() {
+	grep -v -e '^#' -e '^[[:space:]]*$' "$1/series" | awk '{print $2}'
+}
+
+verify_series() {
+	local dir="$1" line want file got bad=0
+	[ -f "$dir/series" ] || die "missing $dir/series"
+	while IFS= read -r line; do
+		case "$line" in ''|'#'*) continue ;; esac
+		want="${line%% *}"; file="${line##* }"
+		[ -f "$dir/$file" ] || die "series lists missing patch $file"
+		got="$(sha256_of "$dir/$file")"
+		if [ "$got" != "$want" ]; then
+			printf '  series hash MISMATCH %s\n    expected %s\n    actual   %s\n' "$file" "$want" "$got" >&2
+			bad=1
+		else
+			info "  series hash ok      $file"
+		fi
+	done < "$dir/series"
+	[ "$bad" -eq 0 ] || die "patch series does not match its hash manifest"
+}
+
+verify_upstream() {
+	local tree="$1" dir="$2" want_d want_n got_d got_n
+	[ -f "$dir/upstream.lock" ] || die "missing $dir/upstream.lock"
+	want_d="$(lock_get tree_manifest_sha256 "$dir/upstream.lock")"
+	want_n="$(lock_get tree_file_count "$dir/upstream.lock")"
+	read -r got_d got_n <<EOF
+$(tree_digest "$tree")
+EOF
+	if [ "$got_d" != "$want_d" ] || [ "$got_n" != "$want_n" ]; then
+		printf '  upstream tree MISMATCH\n    expected %s (%s files)\n    actual   %s (%s files)\n' \
+			"$want_d" "$want_n" "$got_d" "$got_n" >&2
+		die "upstream tree is not the pinned pristine $(lock_get upstream "$dir/upstream.lock") $(lock_get version "$dir/upstream.lock")"
+	fi
+	info "  upstream tree ok    sha256=$got_d files=$got_n"
+}
+
+# Emit "path pre post" for each file in a git-format patch.
+patch_files() {
+	awk '
+		/^diff --git / { path = substr($4, 3); next }
+		/^index [0-9a-f]+\.\.[0-9a-f]+/ { split($2, a, /\.\./); print path, a[1], a[2] }
+	' "$1"
+}
+
+blob_id() {
+	local tree="$1" path="$2"
+	if [ -f "$tree/$path" ]; then git_plain "$tree" hash-object --no-filters -- "$path"; else echo "0000000000000000000000000000000000000000"; fi
+}
+
+check_images() {
+	# $1 tree, $2 patch, $3 pre|post ; prints mismatches, returns 1 on any
+	local tree="$1" patch="$2" which="$3" path pre post want got rc=0
+	while read -r path pre post; do
+		if [ "$which" = pre ]; then want="$pre"; else want="$post"; fi
+		got="$(blob_id "$tree" "$path")"
+		if [ "$got" != "$want" ]; then
+			printf '    %s-image MISMATCH %s (expected blob %s, found %s)\n' "$which" "$path" "${want:0:12}" "${got:0:12}"
+			rc=1
+		fi
+	done <<EOF
+$(patch_files "$patch")
+EOF
+	return $rc
+}
+
+# Strict application. git apply never fuzzes unless -C is given; it DOES
+# silently accept offsets, so we parse its verbose output and reject them.
+git_apply_strict() {
+	local tree="$1" patch="$2" mode="$3" out
+	if ! out="$(git_plain "$tree" apply $mode -v --whitespace=error "$patch" 2>&1)"; then
+		printf '%s\n' "$out" | sed 's/^/    git: /'
+		return 1
+	fi
+	if printf '%s\n' "$out" | grep -E -q 'offset|fuzz|fixed'; then
+		printf '%s\n' "$out" | grep -E 'offset|fuzz|fixed' | sed 's/^/    git: /'
+		return 2
+	fi
+	return 0
+}
+
+write_notice() {
+	# GPLv2 s.2(a) aid: deterministic list of modified files and dates.
+	local tree="$1" dir="$2" p
+	{
+		echo "This is a MODIFIED version of $(lock_get upstream "$dir/upstream.lock") $(lock_get version "$dir/upstream.lock")."
+		echo "It was changed by the Pressgres project. Each patch below lists the files it"
+		echo "changed and the date of the change. Complete patch sources: patches/ in the"
+		echo "Pressgres source distribution. License: GPL-2.0-or-later (see license.txt)."
+		echo
+		for p in $(series_entries "$dir"); do
+			echo "$p  [$(awk -F': ' '/^Patch-Id:/{print $2; exit}' "$dir/$p")]  date=$(awk -F': ' '/^Date:/{print $2; exit}' "$dir/$p")"
+			patch_files "$dir/$p" | awk '{print "    " $1}'
+		done
+	} > "$tree/PRESSGRES-MODIFICATIONS.txt"
+}
+
+cmd_verify() {
+	local tree dir; tree="$(abspath "$1")"; dir="$(abspath "$2")"
+	info "== verify $(basename "$dir") against $tree"
+	verify_upstream "$tree" "$dir"
+	verify_series "$dir"
+}
+
+cmd_apply() {
+	local tree dir p rc want got; tree="$(abspath "$1")"; dir="$(abspath "$2")"
+	cmd_verify "$tree" "$dir"
+	info "== apply (strict: no fuzz, no offset, exact pre/post images)"
+	for p in $(series_entries "$dir"); do
+		check_images "$tree" "$dir/$p" pre || die "$p: pre-image mismatch (tree drifted from pinned upstream)"
+		rc=0; git_apply_strict "$tree" "$dir/$p" --check || rc=$?
+		[ "$rc" -eq 0 ] || die "$p: does not apply exactly (rc=$rc); run rebase-check"
+		git_apply_strict "$tree" "$dir/$p" "" || die "$p: apply failed after successful check"
+		check_images "$tree" "$dir/$p" post || die "$p: post-image mismatch"
+		info "  applied             $p"
+	done
+	write_notice "$tree" "$dir"
+	want="$(lock_get patched_tree_manifest_sha256 "$dir/upstream.lock")"
+	read -r got _ <<EOF
+$(tree_digest "$tree")
+EOF
+	if [ -n "$want" ] && [ "$got" != "$want" ]; then
+		die "patched tree digest $got != locked $want (non-reproducible result)"
+	fi
+	info "  patched tree ok     sha256=$got (matches upstream.lock)"
+	info "RESULT: OK"
+}
+
+cmd_lock() {
+	local tree dir work d n pd line p; tree="$(abspath "$1")"; dir="$(abspath "$2")"
+	# Recompute series hashes in listed order.
+	: > "$dir/series.new"
+	while IFS= read -r line; do
+		case "$line" in ''|'#'*) echo "$line" >> "$dir/series.new"; continue ;; esac
+		p="${line##* }"
+		printf '%s  %s\n' "$(sha256_of "$dir/$p")" "$p" >> "$dir/series.new"
+	done < "$dir/series"
+	mv "$dir/series.new" "$dir/series"
+	read -r d n <<EOF
+$(tree_digest "$tree")
+EOF
+	work="$(mktemp -d)"; cp -R "$tree/." "$work/"
+	{
+		grep -v -e '^tree_manifest_sha256=' -e '^tree_file_count=' -e '^patched_tree_manifest_sha256=' "$dir/upstream.lock" 2>/dev/null || true
+		echo "tree_manifest_sha256=$d"
+		echo "tree_file_count=$n"
+	} > "$dir/upstream.lock.new"; mv "$dir/upstream.lock.new" "$dir/upstream.lock"
+	cmd_apply "$work" "$dir" >/dev/null
+	read -r pd _ <<EOF
+$(tree_digest "$work")
+EOF
+	echo "patched_tree_manifest_sha256=$pd" >> "$dir/upstream.lock"
+	rm -rf "$work"
+	info "locked $(basename "$dir"): upstream=$d ($n files) patched=$pd"
+}
+
+cmd_rebase_check() {
+	local tree dir work p rc status fails=0; tree="$(abspath "$1")"; dir="$(abspath "$2")"
+	info "== rebase-check $(basename "$dir") against $tree (dry run; target is not modified)"
+	verify_series "$dir"
+	if (verify_upstream "$tree" "$dir") >/dev/null 2>&1; then info "  (target IS the pinned upstream)"; else info "  target differs from pinned upstream: classifying each patch"; fi
+	work="$(mktemp -d)"; cp -R "$tree/." "$work/"
+	for p in $(series_entries "$dir"); do
+		if check_images "$work" "$dir/$p" pre >/dev/null; then status="CLEAN"; else status="DRIFTED"; fi
+		rc=0; git_apply_strict "$work" "$dir/$p" --check > "$work/.out" 2>&1 || rc=$?
+		case "$rc" in
+			0) [ "$status" = CLEAN ] && status="CLEAN (exact pre-image)" || status="REFRESH (pre-image changed elsewhere in file; hunks apply exactly)" ;;
+			2) status="REFRESH (applies only with offset; regenerate patch)" ;;
+			*) status="CONFLICT (hunk context changed; manual rebase required)" ;;
+		esac
+		info "  $p: $status"
+		check_images "$work" "$dir/$p" pre 2>/dev/null | sed 's/^/  /' || true
+		sed 's/^/  /' "$work/.out"
+		case "$rc" in
+			0) git_plain "$work" apply "$dir/$p" ;;
+			2) git_plain "$work" apply "$dir/$p"; fails=$((fails + 1)) ;;
+			*) fails=$((fails + 1))
+			   info "    rejected hunks:"
+			   git_plain "$work" apply --reject "$dir/$p" >/dev/null 2>&1 || true
+			   find "$work" -name '*.rej' -print | while IFS= read -r r; do sed 's/^/      /' "$r"; rm -f "$r"; done ;;
+		esac
+	done
+	rm -rf "$work"
+	if [ "$fails" -gt 0 ]; then info "RESULT: $fails patch(es) need maintainer action"; exit 3; fi
+	info "RESULT: series applies cleanly"
+}
+
+[ $# -ge 1 ] || die "usage: patchset {manifest|lock|verify|apply|rebase-check} <tree> [series-dir]"
+cmd="$1"; shift
+case "$cmd" in
+	manifest) [ $# -eq 1 ] || die "usage: patchset manifest <tree>"; manifest "$1" ;;
+	lock|verify|apply|rebase-check)
+		[ $# -eq 2 ] || die "usage: patchset $cmd <tree> <series-dir>"
+		[ -d "$1" ] || die "tree not found: $1"; [ -d "$2" ] || die "series dir not found: $2"
+		case "$cmd" in
+			lock) cmd_lock "$1" "$2" ;; verify) cmd_verify "$1" "$2" ;;
+			apply) cmd_apply "$1" "$2" ;; rebase-check) cmd_rebase_check "$1" "$2" ;;
+		esac ;;
+	*) die "unknown subcommand: $cmd" ;;
+esac

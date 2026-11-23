@@ -1,0 +1,33 @@
+Patch-Id: PG-WP-0002
+Subject: Use pressgres_object_id() for post IDs in get_post_custom() and is_sticky()
+Upstream: wordpress-develop
+Upstream-Version: 7.1.5
+Upstream-Status: not-forwarded
+Author: Pressgres contributors
+Date: 2026-11-22
+License: GPL-2.0-or-later
+Tests: tests/phpunit/pressgres/PostIdTest.php (not part of demo)
+Description: ILLUSTRATIVE DEMO PATCH (R-005). Replaces two absint() casts on post IDs.
+
+diff --git a/wp-includes/post.php b/wp-includes/post.php
+index aa6e4f9999ae284cd0edff011b0ce9409a614236..46e2dd079275a1a3547bb5907211fda0172e84e2 100644
+--- a/wp-includes/post.php
++++ b/wp-includes/post.php
+@@ -2846,7 +2846,7 @@ function unregister_post_meta( $post_type, $meta_key ) {
+  *                                                 no post meta.
+  */
+ function get_post_custom( $post_id = 0 ) {
+-	$post_id = absint( $post_id );
++	$post_id = pressgres_object_id( $post_id ); // Pressgres: modified 2026-11-22.
+ 
+ 	if ( ! $post_id ) {
+ 		$post_id = get_the_ID();
+@@ -2917,7 +2917,7 @@ function get_post_custom_values( $key = '', $post_id = 0 ) {
+  * @return bool Whether post is sticky.
+  */
+ function is_sticky( $post_id = 0 ) {
+-	$post_id = absint( $post_id );
++	$post_id = pressgres_object_id( $post_id ); // Pressgres: modified 2026-11-22.
+ 
+ 	if ( ! $post_id ) {
+ 		$post_id = get_the_ID();

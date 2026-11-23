@@ -1,0 +1,60 @@
+name: pressgres-r009
+
+# Disposable fixtures for the R-009 core PHPUnit baseline.
+# Host ports are bound to 127.0.0.1 only and chosen not to clash with other
+# local stacks (MySQL 53307, PostgreSQL 55434).
+
+services:
+  mysql:
+    image: mysql:8.4.13
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wordpress_tests
+      MYSQL_USER: wptests
+      MYSQL_PASSWORD: wptests
+    command: ["--innodb-flush-log-at-trx-commit=2", "--skip-log-bin"]
+    tmpfs:
+      - /var/lib/mysql
+    ports:
+      - "127.0.0.1:53307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+
+  postgres:
+    image: postgres:18.6-alpine
+    environment:
+      POSTGRES_USER: wptests
+      POSTGRES_PASSWORD: wptests
+      POSTGRES_DB: wordpress_tests
+    command: ["postgres", "-c", "fsync=off", "-c", "synchronous_commit=off", "-c", "full_page_writes=off", "-c", "log_min_error_statement=error"]
+    tmpfs:
+      - /var/lib/postgresql
+    ports:
+      - "127.0.0.1:55434:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "wptests", "-d", "wordpress_tests"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+
+  runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: pressgres-r009-runner:php8.4.28
+    profiles: ["runner"]
+    working_dir: /srv/wordpress-develop
+    volumes:
+      # Pinned upstream source, read-only. Copied into the wpdev volume by run.sh.
+      - ${WP_DEVELOP_REF:?set WP_DEVELOP_REF to the wordpress-develop-7.1.5 checkout}:/reference:ro
+      # Optional Pressgres db.php prototype (read-only), e.g. the R-003 prototype dir.
+      - ${PG_PROTOTYPE_DIR:-./config/empty}:/prototype:ro
+      - ./config:/harness:ro
+      - ./results:/results
+      - wpdev:/srv/wordpress-develop
+
+volumes:
+  wpdev:

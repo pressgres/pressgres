@@ -9,3 +9,6 @@ node_modules/
 coverage/
 .idea/
 .vscode/
+
+# Research prototypes: generated WordPress copies, logs and state (R-003)
+prototypes/*/build/

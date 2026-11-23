@@ -1,0 +1,2 @@
+test,directory,status,bucket,bucket_inferred,signature
+Tests_Script_Modules_WpScriptModules::test_default_script_module_files_exist,script-modules,failure,harness/environment,harness/environment,The script module file used with SCRIPT_DEBUG enabled should exist for '<s>'.
