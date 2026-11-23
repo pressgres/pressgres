@@ -1,0 +1,2 @@
+row_type,persona,interviewed,preview_ready,preview_conditional,preview_no,preview_unknown,strong_signals,fresh_site_fit,import_blockers,deployment_pattern,db_tls_owner,secrets_owner,funding_or_maintenance_actions,preview_blockers,plugin,mention_orgs,required_orgs,ready_required_orgs,workflow_and_substitute,r014_outcome
+EXAMPLE,agency,,,,,,,,,,,,,,fictional-form-plugin,3,2,1,Lead intake with routing and no substitute in use,Fictional target for evaluation
