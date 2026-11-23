@@ -11,5 +11,8 @@
         <testsuite name="Installer CLI">
             <directory>apps/installer-cli/tests</directory>
         </testsuite>
+        <testsuite name="Release">
+            <directory>packages/release/tests</directory>
+        </testsuite>
     </testsuites>
 </phpunit>

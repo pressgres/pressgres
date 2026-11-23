@@ -6,7 +6,8 @@
     "require": {
         "php": "^8.4",
         "pressgres/contracts": "^0.1",
-        "pressgres/installer-cli": "0.1.0"
+        "pressgres/installer-cli": "0.1.0",
+        "pressgres/release": "0.1.0"
     },
     "require-dev": {
         "phpstan/phpstan": "^2.1",
@@ -21,7 +22,8 @@
                 "symlink": true,
                 "reference": "config",
                 "versions": {
-                    "pressgres/contracts": "0.1.0"
+                    "pressgres/contracts": "0.1.0",
+                    "pressgres/release": "0.1.0"
                 }
             }
         },

@@ -7,3 +7,5 @@ parameters:
         - apps/installer-cli/bin/wps
         - apps/installer-cli/src
         - apps/installer-cli/tests
+        - packages/release/src
+        - packages/release/tests
