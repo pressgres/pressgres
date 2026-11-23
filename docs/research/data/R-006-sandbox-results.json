@@ -1,0 +1,694 @@
+{
+  "environment": {
+    "wordpress_sha": "984163c92ef66b6186538ecf01bacb97fc097541",
+    "docker_engine": "29.8.2",
+    "images": {
+      "pressgres-r003-php:8.4.27": "sha256:c6ea6df2c2875cac2f5578a88ea13f308410400f86cddac94909604d8f64c9b5",
+      "postgres:18.6-alpine": "sha256:6def1cb8d5ffa3443c527419cc13f395ab328c27bf90fcb1e80831aae4103bc3"
+    },
+    "host_secret_marker_set": true,
+    "network": {
+      "internal": true,
+      "ipv4_gateway_mode": "isolated",
+      "ipv6": false,
+      "canary_positive_control": true
+    }
+  },
+  "fixtures": [
+    {
+      "fixture": "benign",
+      "expected": "allow: activation, option and upload",
+      "observed": {
+        "exit_status": 0,
+        "wall_seconds": 0.673,
+        "host_deadline": false,
+        "oom_killed": false,
+        "stderr": "",
+        "container_policy": {
+          "user": "65534:65534",
+          "readonly_root": true,
+          "dropped_caps": [
+            "ALL"
+          ],
+          "security_options": [
+            "no-new-privileges:true"
+          ],
+          "cpu_nanos": 500000000,
+          "memory_bytes": 268435456,
+          "memory_swap_bytes": 268435456,
+          "pids": 32,
+          "network_mode": "pressgres-r006-8bc1460ea9-internal",
+          "attached_networks": [
+            "pressgres-r006-8bc1460ea9-internal"
+          ],
+          "ipc_mode": "none",
+          "tmpfs": {
+            "/scratch": "rw,noexec,nosuid,nodev,size=16m,uid=65534,gid=65534,mode=0700"
+          },
+          "published_ports": {},
+          "binds_readonly": true
+        },
+        "kernel": {
+          "Uid": [
+            "65534",
+            "65534",
+            "65534",
+            "65534"
+          ],
+          "Gid": [
+            "65534",
+            "65534",
+            "65534",
+            "65534"
+          ],
+          "CapEff": [
+            "0000000000000000"
+          ],
+          "NoNewPrivs": [
+            "1"
+          ],
+          "Seccomp": [
+            "2"
+          ]
+        },
+        "events": [
+          {
+            "kind": "upload",
+            "success": true
+          },
+          {
+            "kind": "activation",
+            "active": true,
+            "error": null
+          }
+        ],
+        "file_writes": [
+          "/scratch/cache/events.jsonl",
+          "/scratch/cache/php-output.log",
+          "/scratch/cache/queries.jsonl",
+          "/scratch/uploads/r006.txt"
+        ],
+        "connection_attempts": [],
+        "database": {
+          "active_plugins": "a:1:{i:0;s:10:\"benign.php\";}",
+          "unsafe_meta_rows": 0,
+          "posts_table_present": true,
+          "ddl_probe_table_absent": true,
+          "benign_option": "activated"
+        },
+        "postgresql": "18.6|7",
+        "sql_status_counts": {
+          "ok": 77
+        },
+        "adapter_rejections": []
+      },
+      "verdict": "PASS"
+    },
+    {
+      "fixture": "egress",
+      "expected": "block: HTTP to reachable isolated canary",
+      "observed": {
+        "exit_status": 0,
+        "wall_seconds": 0.717,
+        "host_deadline": false,
+        "oom_killed": false,
+        "stderr": "",
+        "container_policy": {
+          "user": "65534:65534",
+          "readonly_root": true,
+          "dropped_caps": [
+            "ALL"
+          ],
+          "security_options": [
+            "no-new-privileges:true"
+          ],
+          "cpu_nanos": 500000000,
+          "memory_bytes": 268435456,
+          "memory_swap_bytes": 268435456,
+          "pids": 32,
+          "network_mode": "pressgres-r006-8bc1460ea9-internal",
+          "attached_networks": [
+            "pressgres-r006-8bc1460ea9-internal"
+          ],
+          "ipc_mode": "none",
+          "tmpfs": {
+            "/scratch": "rw,noexec,nosuid,nodev,size=16m,uid=65534,gid=65534,mode=0700"
+          },
+          "published_ports": {},
+          "binds_readonly": true
+        },
+        "kernel": {
+          "Uid": [
+            "65534",
+            "65534",
+            "65534",
+            "65534"
+          ],
+          "Gid": [
+            "65534",
+            "65534",
+            "65534",
+            "65534"
+          ],
+          "CapEff": [
+            "0000000000000000"
+          ],
+          "NoNewPrivs": [
+            "1"
+          ],
+          "Seccomp": [
+            "2"
+          ]
+        },
+        "events": [
+          {
+            "kind": "connection",
+            "url": "http://192.168.183.1:8080/",
+            "connected": false,
+            "error": "file_get_contents(http://192.168.183.1:8080/): Failed to open stream: Network unreachable"
+          },
+          {
+            "kind": "activation",
+            "active": true,
+            "error": null
+          }
+        ],
+        "file_writes": [
+          "/scratch/cache/events.jsonl",
+          "/scratch/cache/php-output.log",
+          "/scratch/cache/queries.jsonl"
+        ],
+        "connection_attempts": [
+          {
+            "kind": "connection",
+            "url": "http://192.168.183.1:8080/",
+            "connected": false,
+            "error": "file_get_contents(http://192.168.183.1:8080/): Failed to open stream: Network unreachable"
+          }
+        ],
+        "database": {
+          "active_plugins": "a:1:{i:0;s:10:\"egress.php\";}",
+          "unsafe_meta_rows": 0,
+          "posts_table_present": true,
+          "ddl_probe_table_absent": true,
+          "benign_option": ""
+        },
+        "postgresql": "18.6|7",
+        "canary_reachable_on_control_network": true,
+        "sql_status_counts": {
+          "ok": 72
+        },
+        "adapter_rejections": []
+      },
+      "verdict": "PASS"
+    },
+    {
+      "fixture": "core-write",
+      "expected": "block: write under wp-includes",
+      "observed": {
+        "exit_status": 0,
+        "wall_seconds": 0.575,
+        "host_deadline": false,
+        "oom_killed": false,
+        "stderr": "",
+        "container_policy": {
+          "user": "65534:65534",
+          "readonly_root": true,
+          "dropped_caps": [
+            "ALL"
+          ],
+          "security_options": [
+            "no-new-privileges:true"
+          ],
+          "cpu_nanos": 500000000,
+          "memory_bytes": 268435456,
+          "memory_swap_bytes": 268435456,
+          "pids": 32,
+          "network_mode": "pressgres-r006-8bc1460ea9-internal",
+          "attached_networks": [
+            "pressgres-r006-8bc1460ea9-internal"
+          ],
+          "ipc_mode": "none",
+          "tmpfs": {
+            "/scratch": "rw,noexec,nosuid,nodev,size=16m,uid=65534,gid=65534,mode=0700"
+          },
+          "published_ports": {},
+          "binds_readonly": true
+        },
+        "kernel": {
+          "Uid": [
+            "65534",
+            "65534",
+            "65534",
+            "65534"
+          ],
+          "Gid": [
+            "65534",
+            "65534",
+            "65534",
+            "65534"
+          ],
+          "CapEff": [
+            "0000000000000000"
+          ],
+          "NoNewPrivs": [
+            "1"
+          ],
+          "Seccomp": [
+            "2"
+          ]
+        },
+        "events": [
+          {
+            "kind": "file_write",
+            "path": "/wordpress/wp-includes/r006-write.txt",
+            "written": false,
+            "error": "file_put_contents(/wordpress/wp-includes/r006-write.txt): Failed to open stream: Read-only file system"
+          },
+          {
+            "kind": "activation",
+            "active": true,
+            "error": null
+          }
+        ],
+        "file_writes": [
+          "/scratch/cache/events.jsonl",
+          "/scratch/cache/php-output.log",
+          "/scratch/cache/queries.jsonl"
+        ],
+        "connection_attempts": [],
+        "database": {
+          "active_plugins": "a:1:{i:0;s:14:\"core-write.php\";}",
+          "unsafe_meta_rows": 0,
+          "posts_table_present": true,
+          "ddl_probe_table_absent": true,
+          "benign_option": ""
+        },
+        "postgresql": "18.6|7",
+        "marker_in_core": false,
+        "sql_status_counts": {
+          "ok": 72
+        },
+        "adapter_rejections": []
+      },
+      "verdict": "PASS"
+    },
+    {
+      "fixture": "ddl",
+      "expected": "block: adapter DDL and PostgreSQL runtime DDL",
+      "observed": {
+        "exit_status": 0,
+        "wall_seconds": 0.589,
+        "host_deadline": false,
+        "oom_killed": false,
+        "stderr": "",
+        "container_policy": {
+          "user": "65534:65534",
+          "readonly_root": true,
+          "dropped_caps": [
+            "ALL"
+          ],
+          "security_options": [
+            "no-new-privileges:true"
+          ],
+          "cpu_nanos": 500000000,
+          "memory_bytes": 268435456,
+          "memory_swap_bytes": 268435456,
+          "pids": 32,
+          "network_mode": "pressgres-r006-8bc1460ea9-internal",
+          "attached_networks": [
+            "pressgres-r006-8bc1460ea9-internal"
+          ],
+          "ipc_mode": "none",
+          "tmpfs": {
+            "/scratch": "rw,noexec,nosuid,nodev,size=16m,uid=65534,gid=65534,mode=0700"
+          },
+          "published_ports": {},
+          "binds_readonly": true
+        },
+        "kernel": {
+          "Uid": [
+            "65534",
+            "65534",
+            "65534",
+            "65534"
+          ],
+          "Gid": [
+            "65534",
+            "65534",
+            "65534",
+            "65534"
+          ],
+          "CapEff": [
+            "0000000000000000"
+          ],
+          "NoNewPrivs": [
+            "1"
+          ],
+          "Seccomp": [
+            "2"
+          ]
+        },
+        "events": [
+          {
+            "kind": "ddl",
+            "create_denied": true,
+            "drop_denied": true
+          },
+          {
+            "kind": "activation",
+            "active": true,
+            "error": null
+          }
+        ],
+        "file_writes": [
+          "/scratch/cache/events.jsonl",
+          "/scratch/cache/php-output.log",
+          "/scratch/cache/queries.jsonl"
+        ],
+        "connection_attempts": [],
+        "database": {
+          "active_plugins": "a:1:{i:0;s:7:\"ddl.php\";}",
+          "unsafe_meta_rows": 0,
+          "posts_table_present": true,
+          "ddl_probe_table_absent": true,
+          "benign_option": "",
+          "direct_ddl": {
+            "create": {
+              "exit_status": 3,
+              "denied": true,
+              "error": "ERROR:  42501: permission denied for schema public\nLINE 1: CREATE TABLE public.r006_ddl_probe (id uuid);\n                     ^\nLOCATION:  aclcheck_error, aclchk.c:2793"
+            },
+            "alter": {
+              "exit_status": 3,
+              "denied": true,
+              "error": "ERROR:  42501: must be owner of table wp_posts\nLOCATION:  aclcheck_error, aclchk.c:2931"
+            },
+            "drop": {
+              "exit_status": 3,
+              "denied": true,
+              "error": "ERROR:  42501: must be owner of table wp_posts\nLOCATION:  aclcheck_error, aclchk.c:2931"
+            },
+            "temporary": {
+              "exit_status": 3,
+              "denied": true,
+              "error": "ERROR:  42501: permission denied to create temporary tables in database \"sandbox\"\nLINE 1: CREATE TEMP TABLE r006_ddl_probe (id uuid);\n                          ^\nLOCATION:  InitTempTableNamespace, namespace.c:4413"
+            }
+          }
+        },
+        "postgresql": "18.6|7",
+        "sql_status_counts": {
+          "ok": 72,
+          "unsupported": 2
+        },
+        "adapter_rejections": [
+          {
+            "original": "CREATE TABLE r006_ddl_probe (id uuid)",
+            "sent": null,
+            "status": "unsupported",
+            "error": "statement type 'CREATE' not in allow-list"
+          },
+          {
+            "original": "DROP TABLE wp_posts",
+            "sent": null,
+            "status": "unsupported",
+            "error": "statement type 'DROP' not in allow-list"
+          }
+        ]
+      },
+      "verdict": "PASS"
+    },
+    {
+      "fixture": "secret-read",
+      "expected": "block: higher-privilege secrets; disposable runtime credential visible",
+      "observed": {
+        "exit_status": 0,
+        "wall_seconds": 0.589,
+        "host_deadline": false,
+        "oom_killed": false,
+        "stderr": "",
+        "container_policy": {
+          "user": "65534:65534",
+          "readonly_root": true,
+          "dropped_caps": [
+            "ALL"
+          ],
+          "security_options": [
+            "no-new-privileges:true"
+          ],
+          "cpu_nanos": 500000000,
+          "memory_bytes": 268435456,
+          "memory_swap_bytes": 268435456,
+          "pids": 32,
+          "network_mode": "pressgres-r006-8bc1460ea9-internal",
+          "attached_networks": [
+            "pressgres-r006-8bc1460ea9-internal"
+          ],
+          "ipc_mode": "none",
+          "tmpfs": {
+            "/scratch": "rw,noexec,nosuid,nodev,size=16m,uid=65534,gid=65534,mode=0700"
+          },
+          "published_ports": {},
+          "binds_readonly": true
+        },
+        "kernel": {
+          "Uid": [
+            "65534",
+            "65534",
+            "65534",
+            "65534"
+          ],
+          "Gid": [
+            "65534",
+            "65534",
+            "65534",
+            "65534"
+          ],
+          "CapEff": [
+            "0000000000000000"
+          ],
+          "NoNewPrivs": [
+            "1"
+          ],
+          "Seccomp": [
+            "2"
+          ]
+        },
+        "events": [
+          {
+            "kind": "secrets",
+            "runtime_visible": true,
+            "test_marker_visible": true,
+            "restricted_env": [],
+            "secret_mount": false
+          },
+          {
+            "kind": "activation",
+            "active": true,
+            "error": null
+          }
+        ],
+        "file_writes": [
+          "/scratch/cache/events.jsonl",
+          "/scratch/cache/php-output.log",
+          "/scratch/cache/queries.jsonl"
+        ],
+        "connection_attempts": [],
+        "database": {
+          "active_plugins": "a:1:{i:0;s:15:\"secret-read.php\";}",
+          "unsafe_meta_rows": 0,
+          "posts_table_present": true,
+          "ddl_probe_table_absent": true,
+          "benign_option": ""
+        },
+        "postgresql": "18.6|7",
+        "sql_status_counts": {
+          "ok": 72
+        },
+        "adapter_rejections": []
+      },
+      "verdict": "PASS"
+    },
+    {
+      "fixture": "uuid-cast",
+      "expected": "block: UUID-unsafe metadata write",
+      "observed": {
+        "exit_status": 0,
+        "wall_seconds": 0.595,
+        "host_deadline": false,
+        "oom_killed": false,
+        "stderr": "",
+        "container_policy": {
+          "user": "65534:65534",
+          "readonly_root": true,
+          "dropped_caps": [
+            "ALL"
+          ],
+          "security_options": [
+            "no-new-privileges:true"
+          ],
+          "cpu_nanos": 500000000,
+          "memory_bytes": 268435456,
+          "memory_swap_bytes": 268435456,
+          "pids": 32,
+          "network_mode": "pressgres-r006-8bc1460ea9-internal",
+          "attached_networks": [
+            "pressgres-r006-8bc1460ea9-internal"
+          ],
+          "ipc_mode": "none",
+          "tmpfs": {
+            "/scratch": "rw,noexec,nosuid,nodev,size=16m,uid=65534,gid=65534,mode=0700"
+          },
+          "published_ports": {},
+          "binds_readonly": true
+        },
+        "kernel": {
+          "Uid": [
+            "65534",
+            "65534",
+            "65534",
+            "65534"
+          ],
+          "Gid": [
+            "65534",
+            "65534",
+            "65534",
+            "65534"
+          ],
+          "CapEff": [
+            "0000000000000000"
+          ],
+          "NoNewPrivs": [
+            "1"
+          ],
+          "Seccomp": [
+            "2"
+          ]
+        },
+        "events": [
+          {
+            "kind": "uuid_cast",
+            "seed_matched": true,
+            "cast": 1,
+            "rejected": true
+          },
+          {
+            "kind": "activation",
+            "active": true,
+            "error": null
+          }
+        ],
+        "file_writes": [
+          "/scratch/cache/events.jsonl",
+          "/scratch/cache/php-output.log",
+          "/scratch/cache/queries.jsonl"
+        ],
+        "connection_attempts": [],
+        "database": {
+          "active_plugins": "a:1:{i:0;s:13:\"uuid-cast.php\";}",
+          "unsafe_meta_rows": 0,
+          "posts_table_present": true,
+          "ddl_probe_table_absent": true,
+          "benign_option": ""
+        },
+        "postgresql": "18.6|7",
+        "sql_status_counts": {
+          "ok": 73,
+          "unsupported": 1
+        },
+        "adapter_rejections": [
+          {
+            "original": "INSERT INTO wp_postmeta (post_id, meta_key, meta_value) VALUES (...)",
+            "sent": null,
+            "status": "unsupported",
+            "error": "non-UUID value for uuid column wp_postmeta.post_id: int(1)"
+          }
+        ]
+      },
+      "verdict": "PASS"
+    },
+    {
+      "fixture": "infinite-loop",
+      "expected": "block: wall-clock deadline",
+      "observed": {
+        "exit_status": 137,
+        "wall_seconds": 4.317,
+        "host_deadline": false,
+        "oom_killed": false,
+        "stderr": "",
+        "container_policy": {
+          "user": "65534:65534",
+          "readonly_root": true,
+          "dropped_caps": [
+            "ALL"
+          ],
+          "security_options": [
+            "no-new-privileges:true"
+          ],
+          "cpu_nanos": 500000000,
+          "memory_bytes": 268435456,
+          "memory_swap_bytes": 268435456,
+          "pids": 32,
+          "network_mode": "pressgres-r006-8bc1460ea9-internal",
+          "attached_networks": [
+            "pressgres-r006-8bc1460ea9-internal"
+          ],
+          "ipc_mode": "none",
+          "tmpfs": {
+            "/scratch": "rw,noexec,nosuid,nodev,size=16m,uid=65534,gid=65534,mode=0700"
+          },
+          "published_ports": {},
+          "binds_readonly": true
+        },
+        "kernel": {
+          "Uid": [
+            "65534",
+            "65534",
+            "65534",
+            "65534"
+          ],
+          "Gid": [
+            "65534",
+            "65534",
+            "65534",
+            "65534"
+          ],
+          "CapEff": [
+            "0000000000000000"
+          ],
+          "NoNewPrivs": [
+            "1"
+          ],
+          "Seccomp": [
+            "2"
+          ]
+        },
+        "events": [
+          {
+            "kind": "loop",
+            "entered": true
+          }
+        ],
+        "file_writes": [
+          "/scratch/cache/events.jsonl",
+          "/scratch/cache/php-output.log",
+          "/scratch/cache/queries.jsonl"
+        ],
+        "connection_attempts": [],
+        "database": {
+          "active_plugins": "a:0:{}",
+          "unsafe_meta_rows": 0,
+          "posts_table_present": true,
+          "ddl_probe_table_absent": true,
+          "benign_option": ""
+        },
+        "postgresql": "18.6|7",
+        "sql_status_counts": {
+          "ok": 70
+        },
+        "adapter_rejections": []
+      },
+      "verdict": "PASS"
+    }
+  ]
+}

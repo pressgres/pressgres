@@ -1,0 +1,42 @@
+source,uuid_identity_cast,confidence,review_note
+wordpress-develop-7.1.5/src/wp-includes/capabilities.php:51,yes,high,Current user capability target
+wordpress-develop-7.1.5/src/wp-includes/capabilities.php:70,yes,high,Edit-user target
+wordpress-develop-7.1.5/src/wp-includes/capabilities.php:149,yes,high,Delete ownership author
+wordpress-develop-7.1.5/src/wp-includes/capabilities.php:252,yes,high,Edit ownership author
+wordpress-develop-7.1.5/src/wp-includes/capabilities.php:374,yes,high,Read ownership author
+wordpress-develop-7.1.5/src/wp-includes/capabilities.php:463,yes,high,Metadata owner identified by object type
+wordpress-develop-7.1.5/src/wp-includes/capabilities.php:725,yes,high,Term capability target
+wordpress-develop-7.1.5/src/wp-includes/capabilities.php:826,yes,high,Post subtype lookup
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:506,no,high,Page size for pagination
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:518,no,high,Total post count header
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:519,no,high,Total page count header
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:560,yes,high,Post item route ID validity test
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:564,yes,high,Post lookup argument
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:1396,yes,high,Requested author
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:1397,yes,high,Existing author
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:1447,yes,high,Parent reference sentinel test
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:1450,yes,high,Parent post lookup
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:1460,yes,high,Stored parent reference
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:1466,no,high,Numeric menu order
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:1614,yes,high,Featured attachment reference
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:1744,yes,high,Term assignment capability target
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:2056,yes,high,Response author
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:2064,yes,high,Response parent
+wordpress-develop-7.1.5/src/wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php:2068,no,high,Numeric response menu order
+wordpress-develop-7.1.5/src/wp-includes/user.php:1037,yes,high,User lookup for site memberships
+wordpress-develop-7.1.5/src/wp-includes/user.php:1104,no,high,Multisite site key outside single-site UUID scope
+wordpress-develop-7.1.5/src/wp-includes/user.php:1166,yes,high,User lookup for membership check
+wordpress-develop-7.1.5/src/wp-includes/user.php:1167,no,high,Multisite blog ID outside single-site UUID scope
+wordpress-develop-7.1.5/src/wp-includes/user.php:1414,no,high,Count of users for a role
+wordpress-develop-7.1.5/src/wp-includes/user.php:1420,no,high,Count of users with no role
+wordpress-develop-7.1.5/src/wp-includes/user.php:1423,no,high,Total user count
+wordpress-develop-7.1.5/src/wp-includes/user.php:1649,yes,high,User ID in legacy template global
+wordpress-develop-7.1.5/src/wp-includes/user.php:1650,no,high,Numeric user level
+wordpress-develop-7.1.5/src/wp-includes/user.php:1833,yes,high,Selected user in dropdown
+wordpress-develop-7.1.5/src/wp-includes/user.php:1836,yes,high,User ID for selection comparison
+wordpress-develop-7.1.5/src/wp-includes/user.php:1901,yes,high,ID is the only field in the integer field list
+wordpress-develop-7.1.5/src/wp-includes/user.php:1994,yes,high,Restores type for the ID field after escaping
+wordpress-develop-7.1.5/src/wp-includes/user.php:2271,yes,high,User update ID
+wordpress-develop-7.1.5/src/wp-includes/user.php:2575,yes,high,User creation result from insert_id
+wordpress-develop-7.1.5/src/wp-includes/user.php:2960,no,high,Login cookie expiration timestamp
+wordpress-develop-7.1.5/src/wp-includes/user.php:3880,yes,high,Current user identity comparison
