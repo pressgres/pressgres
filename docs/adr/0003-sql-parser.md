@@ -1,6 +1,6 @@
 # ADR-0003: SQL parser (reuse standalone `wordpress/mysql-parser`)
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-23)
 - **Date:** 2026-11-23
 - **Deciders:** Project lead (solo maintainer)
 - **Related issues:** R-004, R-002 (roadmap tasks in [08 — Roadmap](../08-roadmap.md)); R-015 / pressgres/pressgres#16 (licensing); ADR-001, ADR-002, ADR-011

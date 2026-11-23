@@ -1,8 +1,8 @@
 # ADR-0007: Project brand and licensing (Pressgres working name, GPL-2.0-or-later)
 
-- **Status:** Proposed. **Blocker for Accepted:** trademark and registry clearance, R-015 / pressgres/pressgres#16.
+- **Status:** Accepted (2026-11-23). The licence and the never-“WordPress” rule apply now; the name stays a working name until the trademark and registry checks in R-015 / pressgres/pressgres#16 are done.
 - **Date:** 2026-11-23
-- **Deciders:** Project lead (solo maintainer); legal review pending
+- **Deciders:** Project lead (solo maintainer)
 - **Related issues:** pressgres/pressgres#16 (R-015), pressgres/pressgres#7 (R-005); ADR-001, ADR-003
 
 ## Context

@@ -1,8 +1,8 @@
 # ADR-0001: WordPress change strategy (managed, version-pinned patchset)
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-23)
 - **Date:** 2026-11-22
-- **Deciders:** (pending: patchset codeowners, project lead, legal reviewer for licensing items)
+- **Deciders:** Project lead (solo maintainer)
 - **Related issues:** pressgres/pressgres#7 (R-005); R-001, R-013, R-015, U-001, U-005; ADR-002, ADR-006, ADR-007
 
 ## Context

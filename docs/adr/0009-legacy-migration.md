@@ -1,6 +1,6 @@
 # ADR-0009: Legacy migration scope (fresh sites first; restricted core-only import pilot with explicit crosswalk)
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-23)
 - **Date:** 2026-11-23
 - **Deciders:** Project lead (solo maintainer)
 - **Related issues:** R-002, R-008 (user discovery), X-002, X-003, M-001 (roadmap M4); ADR-002, ADR-004, ADR-008, ADR-011

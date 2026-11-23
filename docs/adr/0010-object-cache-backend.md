@@ -1,6 +1,6 @@
 # ADR-0010: Object cache backend
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-23)
 - **Date:** 2026-11-23
 - **Deciders:** Project lead (solo maintainer)
 - **Related issues:** [pressgres/pressgres#14](https://github.com/pressgres/pressgres/issues/14) (R-010)
