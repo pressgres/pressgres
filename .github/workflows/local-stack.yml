@@ -1,5 +1,9 @@
 name: Local stack smoke
 
+# CI matrix (I-011, ADR-0006): PostgreSQL 18 + Valkey 9.2 is the required,
+# blocking cell. PostgreSQL 19 is an exploratory candidate: same smoke test,
+# non-blocking, and a green result does not make PostgreSQL 19 supported.
+
 on:
   pull_request:
     paths:
@@ -27,9 +31,26 @@ concurrency:
 
 jobs:
   compose-smoke:
-    name: Compose smoke (PHP 8.4, PostgreSQL 18, Valkey 9.2)
+    name: ${{ matrix.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    continue-on-error: ${{ matrix.tier == 'exploratory' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Keep the required cell's job name stable: it is the status check.
+          - name: Compose smoke (PHP 8.4, PostgreSQL 18, Valkey 9.2)
+            cell: pg-18
+            tier: required
+            # Empty: use the compose.yaml default (postgres:18.7-alpine3.24).
+            pg_image: ""
+          - name: Compose smoke (exploratory, PostgreSQL 19)
+            cell: pg-19
+            tier: exploratory
+            pg_image: postgres:19.0-alpine3.24@sha256:8b0ff4cdf221f0c53d7fcda681d3b461be725c492cd881c5ec9c0ad25023f188
+    env:
+      PG_IMAGE: ${{ matrix.pg_image }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -40,3 +61,45 @@ jobs:
           docker compose --env-file "$RUNNER_TEMP/ci.env" --profile mail config --quiet
       - name: Smoke test
         run: docker/smoke.sh
+      - name: Record cell outcome
+        if: always()
+        env:
+          CELL: ${{ matrix.cell }}
+          TIER: ${{ matrix.tier }}
+          OUTCOME: ${{ job.status }}
+        run: |
+          image="${PG_IMAGE:-$(grep -o 'postgres:18[^@}]*' compose.yaml | head -n 1)}"
+          mkdir -p "$RUNNER_TEMP/cell"
+          printf '| %s | %s | %s + Valkey 9.2 | %s |\n' "$CELL" "$TIER" "\`${image%@*}\`" "$OUTCOME" > "$RUNNER_TEMP/cell/$CELL.md"
+          cat "$RUNNER_TEMP/cell/$CELL.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload cell outcome
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: stack-cell-${{ matrix.cell }}
+          path: ${{ runner.temp }}/cell/${{ matrix.cell }}.md
+          retention-days: 7
+
+  summary:
+    name: Local stack matrix summary
+    needs: compose-smoke
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: stack-cell-*
+          merge-multiple: true
+          path: cells
+      - name: Write job summary
+        run: |
+          {
+            echo '## Local stack matrix'
+            echo
+            echo '| Cell | Tier | Stack | Outcome |'
+            echo '|---|---|---|---|'
+            cat cells/*.md 2>/dev/null || echo '| (no cell results) | | | |'
+            echo
+            echo 'Required cells block merges. Exploratory cells are non-blocking;'
+            echo 'a green exploratory cell does not mean the version is supported (ADR-0006).'
+          } >> "$GITHUB_STEP_SUMMARY"
