@@ -25,6 +25,10 @@
 | Migration data loss | production schema | snapshot, approval, verified restore | restore rehearsal |
 | SSRF/exfiltration in sandbox | plugin -> internet | restricted egress/no prod secrets | sandbox adversarial tests |
 
+## Release artifact verification
+
+The [release library](../packages/release/README.md) verifies detached Ed25519 signatures against a separately provisioned trust root. Its versioned lockfile binds the exact source and runtime pins, patch-series digests and artifact digests. The library streams hashes of privately staged files and verifies extracted trees against pinned digests. Signature and path safety failures map to exit code 5. Invalid lockfiles, size mismatches and digest mismatches map to exit code 8. Installer integration and signing real releases are follow-up work.
+
 ## Runtime security details
 
 - Audit schema changes, plugin activation and upgrades; distinguish actor and correlation ID.

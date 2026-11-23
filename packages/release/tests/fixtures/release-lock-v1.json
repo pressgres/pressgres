@@ -1,0 +1,33 @@
+{
+    "lockfile_version": 1,
+    "pressgres_version": "0.1.0-preview.1",
+    "wordpress_develop": {
+        "tag": "7.1.5",
+        "commit": "984163c92ef66b6186538ecf01bacb97fc097541"
+    },
+    "gutenberg_commit": "89408c2b9bd944575dfa9039bc6870da1c8f56cb",
+    "patch_series": {
+        "wordpress": {
+            "series_sha256": "65bc32d1c6577dd876be6384ef9cde8952384b871b20afc6f0482bdc4c1864ab",
+            "upstream_lock_sha256": "fe0ba84d97b03b206346b3d5c758fe93c1e804dfecc9bdeffff29b347a2cc3fc"
+        },
+        "gutenberg": {
+            "series_sha256": "361c2aa3bcd62a6c9460fda8d5e8f47670b5f54790638601a020cf7598534798",
+            "upstream_lock_sha256": "3959925598b8b03b545e58ee4bbf304249d399750fcbc5adc7c254e0fcb334f2"
+        }
+    },
+    "artifacts": [
+        {
+            "name": "core.tar.gz",
+            "url": "https://releases.example.invalid/core.tar.gz",
+            "size": 16,
+            "sha256": "9f2143d01ac8c03f1415bb7a0b92b50390d38dc94c01e4b2de3d5e236c42ee1a",
+            "sha512": "ebc68c03a2304aa521da2602fa945cf178d11bddb2207745e0700964d45e371683b51cfcd8cafb5ace49063196cdbaa6c119b218050d09800e2e79039f7369e8"
+        }
+    ],
+    "runtime": {
+        "php": "8.4.27",
+        "postgresql": "18.6",
+        "valkey": "9.2.0"
+    }
+}

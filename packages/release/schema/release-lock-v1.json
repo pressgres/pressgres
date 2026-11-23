@@ -1,0 +1,164 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Pressgres release lockfile v1",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "lockfile_version",
+        "pressgres_version",
+        "wordpress_develop",
+        "gutenberg_commit",
+        "patch_series",
+        "artifacts",
+        "runtime"
+    ],
+    "properties": {
+        "lockfile_version": {
+            "type": "integer",
+            "enum": [
+                1
+            ]
+        },
+        "pressgres_version": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(-(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(\\.(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?(\\+[0-9A-Za-z-]+(\\.[0-9A-Za-z-]+)*)?$(?![\\s\\S])",
+            "maxLength": 128
+        },
+        "wordpress_develop": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "tag",
+                "commit"
+            ],
+            "properties": {
+                "tag": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$(?![\\s\\S])",
+                    "maxLength": 128
+                },
+                "commit": {
+                    "$ref": "#/definitions/commit"
+                }
+            }
+        },
+        "gutenberg_commit": {
+            "$ref": "#/definitions/commit"
+        },
+        "patch_series": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "wordpress",
+                "gutenberg"
+            ],
+            "properties": {
+                "wordpress": {
+                    "$ref": "#/definitions/patchSeries"
+                },
+                "gutenberg": {
+                    "$ref": "#/definitions/patchSeries"
+                }
+            }
+        },
+        "artifacts": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/artifact"
+            }
+        },
+        "runtime": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "php",
+                "postgresql",
+                "valkey"
+            ],
+            "properties": {
+                "php": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$(?![\\s\\S])",
+                    "maxLength": 128
+                },
+                "postgresql": {
+                    "type": "string",
+                    "pattern": "^[1-9][0-9]*\\.(0|[1-9][0-9]*)$(?![\\s\\S])",
+                    "maxLength": 128
+                },
+                "valkey": {
+                    "type": "string",
+                    "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$(?![\\s\\S])",
+                    "maxLength": 128
+                }
+            }
+        }
+    },
+    "definitions": {
+        "commit": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}$(?![\\s\\S])",
+            "minLength": 40,
+            "maxLength": 40
+        },
+        "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$(?![\\s\\S])",
+            "minLength": 64,
+            "maxLength": 64
+        },
+        "patchSeries": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "series_sha256",
+                "upstream_lock_sha256"
+            ],
+            "properties": {
+                "series_sha256": {
+                    "$ref": "#/definitions/sha256"
+                },
+                "upstream_lock_sha256": {
+                    "$ref": "#/definitions/sha256"
+                }
+            }
+        },
+        "artifact": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "url",
+                "size",
+                "sha256"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$(?![\\s\\S])",
+                    "maxLength": 255
+                },
+                "url": {
+                    "type": "string",
+                    "pattern": "^https://[^/?#@]+([/?][^#]*)?$(?![\\s\\S])",
+                    "format": "uri"
+                },
+                "size": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                },
+                "sha256": {
+                    "$ref": "#/definitions/sha256"
+                },
+                "sha512": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{128}$(?![\\s\\S])",
+                    "minLength": 128,
+                    "maxLength": 128
+                }
+            }
+        }
+    }
+}

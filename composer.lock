@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bfc048c327a74aa021eb8f68780f3827",
+    "content-hash": "3027d32f648006b4e4a25a459e9df225",
     "packages": [
         {
             "name": "justinrainbow/json-schema",
@@ -150,7 +150,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/contracts",
-                "reference": "6b8092627c179df1ed1747393da56ff66dd31965"
+                "reference": "b4166fe97e5cfd9ba4e4e4390546f9c5e311bfe7"
             },
             "require": {
                 "php": "^8.4"
@@ -197,6 +197,38 @@
                 "GPL-2.0-or-later"
             ],
             "description": "The Pressgres wps installer command-line application",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "pressgres/release",
+            "version": "0.1.0",
+            "dist": {
+                "type": "path",
+                "url": "packages/release",
+                "reference": "bc1cead938d6d3421c9563339676eaa9007f4793"
+            },
+            "require": {
+                "ext-filter": "*",
+                "ext-hash": "*",
+                "ext-json": "*",
+                "ext-sodium": "*",
+                "justinrainbow/json-schema": "^6.14",
+                "php": "^8.4",
+                "pressgres/contracts": "^0.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Pressgres\\Release\\": "src/"
+                }
+            },
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "description": "Signed release lockfiles and artifact verification for Pressgres",
             "transport-options": {
                 "symlink": true,
                 "relative": true
