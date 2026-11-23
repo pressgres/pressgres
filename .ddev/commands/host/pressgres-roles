@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+## Description: EXPERIMENTAL (untested): create the ADR-0011 wps_* roles in the DDEV PostgreSQL database
+## Usage: pressgres-roles
+## Example: "ddev pressgres-roles"
+# Reuses docker/postgres/initdb/10-pressgres-roles.sh (the Compose init script)
+# against DDEV's db container (superuser "db", database "db"). Skips if the
+# roles already exist.
+set -euo pipefail
+cd "${DDEV_APPROOT:?run through ddev}"
+set -a
+# shellcheck disable=SC1091
+. .ddev/.env.pressgres-roles.local
+set +a
+
+db="ddev-${DDEV_SITENAME}-db"
+if docker exec "$db" psql -U db -d db -tAc "SELECT 1 FROM pg_roles WHERE rolname = 'wps_runtime'" | grep -q 1; then
+  echo "wps_* roles already exist in $db; nothing to do."
+  exit 0
+fi
+docker exec -i \
+  -e POSTGRES_USER=db -e POSTGRES_DB=db \
+  -e WPS_MIGRATOR_PASSWORD -e WPS_RUNTIME_PASSWORD \
+  "$db" sh -s < docker/postgres/initdb/10-pressgres-roles.sh
+echo "Created wps_owner, wps_migrator, wps_runtime in $db."

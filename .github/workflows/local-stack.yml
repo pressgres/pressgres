@@ -1,0 +1,42 @@
+name: Local stack smoke
+
+on:
+  pull_request:
+    paths:
+      - "compose.yaml"
+      - ".env.example"
+      - "docker/**"
+      - ".ddev/**"
+      - ".github/workflows/local-stack.yml"
+  push:
+    branches: [main]
+    paths:
+      - "compose.yaml"
+      - ".env.example"
+      - "docker/**"
+      - ".ddev/**"
+      - ".github/workflows/local-stack.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: local-stack-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  compose-smoke:
+    name: Compose smoke (PHP 8.4, PostgreSQL 18, Valkey 9.2)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Validate compose file
+        run: |
+          printf '%s\n' PG_SUPERUSER_PASSWORD=x WPS_MIGRATOR_PASSWORD=x WPS_RUNTIME_PASSWORD=x VALKEY_PASSWORD=x > "$RUNNER_TEMP/ci.env"
+          docker compose --env-file "$RUNNER_TEMP/ci.env" --profile mail config --quiet
+      - name: Smoke test
+        run: docker/smoke.sh

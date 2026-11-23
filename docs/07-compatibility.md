@@ -11,8 +11,10 @@
 | Composer | **2.x** exact supported minor in CI | newer as validated | reject unsupported platform |
 | WP-CLI | **2.x** exact tested release in lockfile | other versions subject to integration tests | diagnostic warning/block as appropriate |
 | OS/arch | Linux x86_64, arm64 (CI gated) | Windows/macOS via DDEV locally | container/environment checks |
-| DDEV | supported current DDEV with PostgreSQL-configured database service | pin example version after tested | dev convenience; not production baseline |
+| DDEV | `experimental` profile in `.ddev/` (PostgreSQL 18, Valkey service), written for DDEV v1.25.6 but not yet run | list a DDEV release only after `ddev pressgres-smoke` passes on it | dev convenience; not production baseline |
 | Browsers | recent evergreen Chromium/Firefox/Safari | managed WordPress editor must be tested | E2E gate |
+
+Development stack pins (I-006, not a release support claim): the Compose stack in [12](12-local-development.md#docker-compose-stack-canonical-tested) uses PHP 8.4.28 (FPM, PhpRedis 6.3.0), `postgres:18.7-alpine3.24` and `valkey/valkey:9.2.0-alpine3.24`, each pinned by digest. Its smoke test (`docker/smoke.sh`) passes locally and runs in CI. The Redis / Valkey row above stays provisional until the ADR-0010 drop-in acceptance tests pass.
 
 Note: WordPress 7.1 released Aug 19, 2026 according to official hosting compatibility guide. Upstream WordPress minimum PHP 7.4 does **not** imply Pressgres supports 7.4. Official WordPress documentation lists PHP 8.5 compatibility for recent WordPress versions, but Pressgres will admit it only when its own regression tests pass. PostgreSQL 18 is selected specifically for native `uuidv7()`.
 

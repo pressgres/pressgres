@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+## Description: EXPERIMENTAL (untested): run the Pressgres stack smoke checks in the DDEV web container
+## Usage: pressgres-smoke
+## Example: "ddev pressgres-smoke"
+# Same checks as docker/smoke.sh (docker/smoke/check.php). The migrator
+# password is passed to this one command only, never to the web environment.
+set -euo pipefail
+cd "${DDEV_APPROOT:?run through ddev}"
+set -a
+# shellcheck disable=SC1091
+. .ddev/.env.pressgres-roles.local
+set +a
+ddev --version
+docker exec -i \
+  -e PG_MIGRATOR_USER=wps_migrator \
+  -e PG_MIGRATOR_PASSWORD="$WPS_MIGRATOR_PASSWORD" \
+  "ddev-${DDEV_SITENAME}-web" php /var/www/html/docker/smoke/check.php

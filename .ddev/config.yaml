@@ -1,0 +1,25 @@
+# EXPERIMENTAL Pressgres DDEV profile (ADR-0005, I-006). UNTESTED: written
+# against DDEV v1.25.6 documentation without a local DDEV install. The
+# canonical, CI-tested stack is the root compose.yaml. See docs/12-local-development.md.
+name: pressgres
+# Generic PHP type on purpose: the stock "wordpress" type writes a MySQL-style
+# wp-config.php, which Pressgres must not use.
+type: php
+docroot: public
+php_version: "8.4"
+webserver_type: nginx-fpm
+database:
+  type: postgres
+  version: "18"
+disable_settings_management: true
+ddev_version_constraint: ">= v1.25.6"
+# Non-secret connection settings for the web container. Secrets live in the
+# gitignored .ddev/.env.*.local files created by `ddev pressgres-secrets`.
+web_environment:
+  - PG_HOST=db
+  - PG_PORT=5432
+  - PG_DATABASE=db
+  - PG_RUNTIME_USER=wps_runtime
+  - VALKEY_HOST=valkey
+  - VALKEY_PORT=6379
+  - WP_REDIS_CLIENT=phpredis

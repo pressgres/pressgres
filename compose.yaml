@@ -1,0 +1,101 @@
+# Pressgres canonical development and CI stack (ADR-0005, I-006).
+#
+#   cp .env.example .env   # then replace every change-me value
+#   docker compose up -d --build --wait
+#   docker compose down -v
+#
+# Smoke test: docker/smoke.sh (uses its own project name and throwaway secrets).
+# Not a production runtime and not a security boundary for untrusted plugins.
+name: ${COMPOSE_PROJECT_NAME:-pressgres-dev}
+
+services:
+  postgres:
+    image: postgres:18.7-alpine3.24@sha256:0115267ab5a509022df9319c77be365cef335adb71556c75f60f5360ee247e71
+    environment:
+      POSTGRES_USER: ${PG_SUPERUSER:-postgres}
+      POSTGRES_PASSWORD: ${PG_SUPERUSER_PASSWORD:?set PG_SUPERUSER_PASSWORD in .env}
+      POSTGRES_DB: ${PG_DATABASE:-pressgres}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+      # Consumed only by docker/postgres/initdb on first start.
+      WPS_MIGRATOR_PASSWORD: ${WPS_MIGRATOR_PASSWORD:?set WPS_MIGRATOR_PASSWORD in .env}
+      WPS_RUNTIME_PASSWORD: ${WPS_RUNTIME_PASSWORD:?set WPS_RUNTIME_PASSWORD in .env}
+    volumes:
+      # PostgreSQL 18 images keep PGDATA under /var/lib/postgresql/18/docker.
+      - pgdata:/var/lib/postgresql
+      - ./docker/postgres/initdb:/docker-entrypoint-initdb.d:ro
+    ports:
+      # Empty PG_HOST_PORT publishes an ephemeral loopback port.
+      - "127.0.0.1:${PG_HOST_PORT-55436}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  valkey:
+    image: valkey/valkey:9.2.0-alpine3.24@sha256:c8e2d17498838af5d91e12eb7c11220b3434a7b7131a333e3af52ad5e0b80882
+    environment:
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:?set VALKEY_PASSWORD in .env}
+    # Disposable object cache (ADR-0010): password required, bounded memory,
+    # no persistence. The password is read from the environment at start.
+    command:
+      - sh
+      - -c
+      - >-
+        exec valkey-server
+        --requirepass "$$VALKEY_PASSWORD"
+        --maxmemory 128mb
+        --maxmemory-policy allkeys-lru
+        --save ""
+        --appendonly no
+    ports:
+      - "127.0.0.1:${VALKEY_HOST_PORT-56380}:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli --no-auth-warning -a \"$$VALKEY_PASSWORD\" ping | grep -q PONG"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  php:
+    build:
+      context: ./docker/php
+    image: pressgres-dev-php:8.4.28
+    environment:
+      # Runtime credentials only. Migrator credentials never enter the PHP
+      # runtime environment (ADR-0011); pass them per command when needed.
+      PG_HOST: postgres
+      PG_PORT: "5432"
+      PG_DATABASE: ${PG_DATABASE:-pressgres}
+      PG_RUNTIME_USER: wps_runtime
+      PG_RUNTIME_PASSWORD: ${WPS_RUNTIME_PASSWORD:?set WPS_RUNTIME_PASSWORD in .env}
+      VALKEY_HOST: valkey
+      VALKEY_PORT: "6379"
+      VALKEY_PASSWORD: ${VALKEY_PASSWORD:?set VALKEY_PASSWORD in .env}
+      WP_REDIS_CLIENT: phpredis
+    volumes:
+      - ./:/srv/pressgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "fpm-healthcheck"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  mailpit:
+    image: axllent/mailpit:v1.34.0@sha256:23a2ef85bc50853ab3093645d1d64679afd8887e89da5e48a88940c172591a4e
+    profiles: ["mail"]
+    ports:
+      - "127.0.0.1:${MAILPIT_UI_PORT-58026}:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata:

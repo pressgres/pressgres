@@ -1,0 +1,27 @@
+# EXPERIMENTAL / UNTESTED: Valkey object cache for the DDEV profile (ADR-0010).
+# Same pinned image as the root compose.yaml. VALKEY_PASSWORD comes from the
+# gitignored .ddev/.env.valkey.local (see `ddev pressgres-secrets`).
+services:
+  valkey:
+    container_name: ddev-${DDEV_SITENAME}-valkey
+    image: valkey/valkey:9.2.0-alpine3.24@sha256:c8e2d17498838af5d91e12eb7c11220b3434a7b7131a333e3af52ad5e0b80882
+    labels:
+      com.ddev.site-name: ${DDEV_SITENAME}
+      com.ddev.approot: ${DDEV_APPROOT}
+    expose:
+      - "6379"
+    command:
+      - sh
+      - -c
+      - >-
+        exec valkey-server
+        --requirepass "$$VALKEY_PASSWORD"
+        --maxmemory 128mb
+        --maxmemory-policy allkeys-lru
+        --save ""
+        --appendonly no
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli --no-auth-warning -a \"$$VALKEY_PASSWORD\" ping | grep -q PONG"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
