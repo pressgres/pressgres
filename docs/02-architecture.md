@@ -73,14 +73,16 @@ pressgres/
 └── .github/{workflows,ISSUE_TEMPLATE,CODEOWNERS}
 ```
 
-## Interfaces (planned)
+## Shared interfaces
 
 - `DatabaseDriverInterface::execute(SqlStatement, Bindings): QueryResult`.
 - `SqlCompatibilityEngine::translate(QueryContext): TranslationResult|UnsupportedQuery`.
 - `SchemaMigrator::plan(DesiredSchema, CatalogSnapshot): MigrationPlan`.
 - `PluginAnalyzer::analyze(PluginPackage): CompatibilityReport`.
-- `IdentityCodec::decode/encode(string): UuidV7`.
-- `InstallerStep::plan/apply/verify/compensate` (compensate best-effort; never claim full arbitrary rollback).
+- `IdentityCodec::decode(mixed): Uuid` validates canonical UUIDv7 text at the input boundary. `IdentityCodec::encode(Uuid): string` returns the original text.
+- `InstallerStep::plan/apply/verify/compensate` works with a recorded plan and checkpoints. Compensation is best-effort.
+
+The [contracts package](../packages/contracts/README.md) supplies these interfaces and the UUID codec. The runtime and installer implementations follow in later milestones.
 
 ## Error contract
 

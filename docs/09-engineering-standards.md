@@ -5,11 +5,28 @@
 - PHP 8.4 features allowed in Pressgres code; WordPress patched source retains necessary core style with minimal localized patchset. Do not impose new coding style across upstream WordPress files unnecessarily.
 - New Pressgres code: PSR-12 formatting, PSR-4 autoloading, `declare(strict_types=1)` in new PHP modules, descriptive names, readonly immutable DTOs when practical, exceptions with stable error codes.
 - Maintain WordPress-facing APIs and hooks using WordPress naming/behavior where compatibility requires it.
-- PHPStan or Psalm at a strict baseline, PHPUnit tests, PHP-CS-Fixer/Pint configuration selected and pinned; composer audit and dependency checks.
+- PHPStan at maximum level without a baseline, PHPUnit 12, PHPCS with PSR-12, Composer audit and dependency checks. Composer locks the tool versions.
 - SQL: versioned, checksummed migrations; explicit schema, quoted legacy identifiers where required; bind values, whitelist identifiers, never format values into SQL.
 - JS/TS for admin tooling: TypeScript strict mode, ESLint/Prettier pinned, accessible UI and E2E tests.
 - YAML/JSON: schema validated, deterministic key ordering for generated manifests; never check in secrets.
 - Tests: meaningful failure-path coverage, regression fixtures for every SQL adapter bug, independent test DB, no tests against real operator production databases.
+
+## Local PHP checks
+
+Run from the repository root with PHP 8.4 and Composer 2.10.3.
+
+```bash
+composer validate --strict
+composer validate --strict packages/contracts/composer.json
+composer install --no-interaction --prefer-dist --no-progress
+composer check-platform-reqs
+composer audit
+composer cs
+composer analyse
+composer test
+```
+
+The PHP workflow runs the same checks. The contracts unit suite runs without a database or WordPress installation.
 
 ## Coding guardrails
 

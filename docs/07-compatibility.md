@@ -28,6 +28,7 @@ Installer downloads only release-manifest entries containing upstream WordPress 
 
 ## CI matrix
 
+- Contracts checks cover PHP 8.4.27, canonical UUIDv7 text handling and CLI error mapping. Runtime support still depends on the integration and release gates below.
 - Required: WP 7.1 pinned x PHP 8.4 x PG 18 x supported Redis release on x86_64; repeat on arm64 before claiming arm64.
 - Exploratory: PHP 8.5, PG 19 and next WP line in non-release jobs.
 - Unit: native SQL/UUID, adapter compiler, format semantics, config schema.

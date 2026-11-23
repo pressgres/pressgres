@@ -46,6 +46,8 @@ pressgres/
 
 Full layout: [docs/02 — Architecture](docs/02-architecture.md#repo-structure-comprehensive).
 
+The [contracts package](packages/contracts/README.md) is available in the Composer monorepo. See [local PHP checks](docs/09-engineering-standards.md#local-php-checks) to run its unit tests and analysis.
+
 ## Planning
 
 Work is tracked as Epics → Stories (GitHub issue types + sub-issues) on the [Pressgres Roadmap project](https://github.com/orgs/pressgres/projects/1), one repository milestone per roadmap phase (M0–M5). Task IDs in issue titles (e.g. `R-001`) match [docs/08 — Roadmap](docs/08-roadmap.md).

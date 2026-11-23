@@ -1,0 +1,36 @@
+name: PHP
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    container: php:8.4.27-cli-bookworm@sha256:b3e907a1108629c562c4bb313ce3449e34d49991f6bb2487913f6146f47200fe
+    env:
+      COMPOSER_ALLOW_SUPERUSER: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Composer 2.10.3
+        run: |
+          sed -i 's|http://deb.debian.org|https://deb.debian.org|g' /etc/apt/sources.list.d/debian.sources
+          apt-get update -qq
+          apt-get install --no-install-recommends -y unzip
+          curl -fsSL https://getcomposer.org/download/2.10.3/composer.phar -o /tmp/composer.phar
+          echo '7a2d379d5b8ffdaa028580ef26494c36d2feef4b178d3dd1473a4dbc5e17c8d6  /tmp/composer.phar' | sha256sum -c -
+          install -m 0755 /tmp/composer.phar /usr/local/bin/composer
+      - run: composer validate --strict
+      - run: composer validate --strict packages/contracts/composer.json
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: composer check-platform-reqs
+      - run: composer audit
+      - run: composer cs
+      - run: composer analyse
+      - run: composer test

@@ -1,0 +1,14 @@
+{
+    "name": "pressgres/contracts",
+    "description": "Shared contracts for the Pressgres installer and runtime",
+    "type": "library",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": "^8.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pressgres\\Contracts\\": "src/"
+        }
+    }
+}
