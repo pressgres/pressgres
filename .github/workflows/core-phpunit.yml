@@ -1,0 +1,241 @@
+name: Core PHPUnit
+
+# I-010 (pressgres/pressgres#29): upstream wordpress-develop PHPUnit suite on
+# PostgreSQL 18 with the R-009 harness (tools/core-phpunit/). The gate is the
+# expected-pass ratchet (ADR-0006); the comparable pass rate is a trend.
+# Until the managed patchset exists (M2), the PostgreSQL target is the R-003
+# prototype in configuration PG-C (harness wrapper, pre-created schema,
+# Tests_Admin_IncludesSchema excluded because it leaks global state).
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/core-phpunit.yml"
+      - "tools/core-phpunit/**"
+      - "prototypes/**"
+      - "patches/**"
+      - "packages/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/core-phpunit.yml"
+      - "tools/core-phpunit/**"
+      - "prototypes/**"
+      - "patches/**"
+      - "packages/**"
+  schedule:
+    - cron: "23 4 * * 1" # weekly: PostgreSQL trend point + MySQL control drift check
+  workflow_dispatch:
+    inputs:
+      mysql_control:
+        description: "Also run the MySQL control job"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: core-phpunit-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # Pinned upstream source (ADR-0006). The tag is fetched and must resolve to this commit.
+  WP_DEVELOP_TAG: "7.1.5"
+  WP_DEVELOP_SHA: "984163c92ef66b6186538ecf01bacb97fc097541"
+  RUNNER_IMAGE: "pressgres-r009-runner:php8.4.28"
+
+jobs:
+  ratchet-unit:
+    name: Ratchet script unit tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: python3 -m unittest
+        run: python3 -m unittest discover -s tools/core-phpunit/tests -v
+
+  pgsql:
+    name: PG-C on PostgreSQL 18 (ratchet)
+    needs: ratchet-unit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    env:
+      LABEL: pgsql-c
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Fetch and verify wordpress-develop ${{ env.WP_DEVELOP_TAG }}
+        run: |
+          dir="$RUNNER_TEMP/wordpress-develop"
+          git init -q "$dir"
+          git -C "$dir" fetch -q --depth 1 --no-tags https://github.com/WordPress/wordpress-develop.git "refs/tags/$WP_DEVELOP_TAG"
+          got="$(git -C "$dir" rev-parse 'FETCH_HEAD^{commit}')"
+          if [ "$got" != "$WP_DEVELOP_SHA" ]; then
+            echo "::error::wordpress-develop tag $WP_DEVELOP_TAG resolves to $got, expected $WP_DEVELOP_SHA"
+            exit 1
+          fi
+          git -C "$dir" -c advice.detachedHead=false checkout -q FETCH_HEAD
+          test "$(git -C "$dir" rev-parse HEAD)" = "$WP_DEVELOP_SHA"
+          test -f "$dir/phpunit.xml.dist"
+          echo "WP_DEVELOP_REF=$dir" >> "$GITHUB_ENV"
+          echo "wordpress-develop $WP_DEVELOP_TAG verified at $got"
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build runner image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: tools/core-phpunit
+          load: true
+          tags: ${{ env.RUNNER_IMAGE }}
+          cache-from: type=gha,scope=core-phpunit-runner
+          cache-to: type=gha,scope=core-phpunit-runner,mode=max
+
+      - name: Prepare disposable wordpress-develop copy
+        working-directory: tools/core-phpunit
+        run: ./run.sh prepare
+
+      - name: Run suite (PG-C)
+        id: suite
+        timeout-minutes: 30
+        working-directory: tools/core-phpunit
+        env:
+          PG_PROTOTYPE_DIR: ${{ github.workspace }}/prototypes/r-003
+          PRESSGRES_QUERY_LOG: /dev/null
+        run: ./run.sh test pgsql "$LABEL" --filter '/^(?!Tests_Admin_IncludesSchema::)/'
+
+      - name: Summarize
+        if: ${{ !cancelled() }}
+        working-directory: tools/core-phpunit
+        run: |
+          out="results/$LABEL"
+          mkdir -p "$out/summary"
+          cat "$out/meta.env" || true
+          if [ -s "$out/junit.xml" ]; then
+            python3 summarize.py "$out/junit.xml" --label "$LABEL" --src "$WP_DEVELOP_REF" \
+              --baseline ../../docs/research/data/R-009-mysql-failures.csv \
+              --dir-csv "$out/summary/by-directory.csv" --group-csv "$out/summary/by-group.csv" \
+              --fail-csv "$out/summary/failures.csv" --sig-csv "$out/summary/signatures.csv"
+          fi
+
+      - name: Ratchet
+        if: ${{ !cancelled() }}
+        working-directory: tools/core-phpunit
+        run: |
+          out="results/$LABEL"
+          python3 ratchet.py check "$out/junit.xml" --label "$LABEL" \
+            --phpunit-log "$out/phpunit.log" \
+            --summary-md "$GITHUB_STEP_SUMMARY" \
+            --csv "$out/summary/run-summary.csv" \
+            --out-dir "$out/summary"
+
+      - name: Compress JUnit
+        if: ${{ !cancelled() }}
+        working-directory: tools/core-phpunit
+        run: |
+          out="results/$LABEL"
+          if [ -f "$out/junit.xml" ]; then gzip -c "$out/junit.xml" > "$out/summary/junit.xml.gz"; fi
+          for f in phpunit.log meta.env php-version.txt r009-shim.log; do
+            if [ -f "$out/$f" ]; then gzip -c "$out/$f" > "$out/summary/$f.gz"; fi
+          done
+
+      - name: Upload results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: core-phpunit-pgsql
+          path: tools/core-phpunit/results/${{ env.LABEL }}/summary/
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Tear down containers and volumes
+        if: ${{ always() }}
+        working-directory: tools/core-phpunit
+        run: ./run.sh down
+
+  mysql-control:
+    # Environmental drift check: the committed MySQL control pass list
+    # (baseline/mysql-control-pass.txt) defines the comparable pass rate, so it
+    # is re-verified weekly instead of running MySQL on every PR.
+    name: MySQL control (weekly)
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.mysql_control) }}
+    needs: ratchet-unit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    env:
+      LABEL: mysql-control
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Fetch and verify wordpress-develop ${{ env.WP_DEVELOP_TAG }}
+        run: |
+          dir="$RUNNER_TEMP/wordpress-develop"
+          git init -q "$dir"
+          git -C "$dir" fetch -q --depth 1 --no-tags https://github.com/WordPress/wordpress-develop.git "refs/tags/$WP_DEVELOP_TAG"
+          got="$(git -C "$dir" rev-parse 'FETCH_HEAD^{commit}')"
+          if [ "$got" != "$WP_DEVELOP_SHA" ]; then
+            echo "::error::wordpress-develop tag $WP_DEVELOP_TAG resolves to $got, expected $WP_DEVELOP_SHA"
+            exit 1
+          fi
+          git -C "$dir" -c advice.detachedHead=false checkout -q FETCH_HEAD
+          test "$(git -C "$dir" rev-parse HEAD)" = "$WP_DEVELOP_SHA"
+          echo "WP_DEVELOP_REF=$dir" >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Build runner image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: tools/core-phpunit
+          load: true
+          tags: ${{ env.RUNNER_IMAGE }}
+          cache-from: type=gha,scope=core-phpunit-runner
+
+      - name: Prepare disposable wordpress-develop copy
+        working-directory: tools/core-phpunit
+        run: ./run.sh prepare
+
+      - name: Run suite (MySQL 8.4 control)
+        timeout-minutes: 30
+        working-directory: tools/core-phpunit
+        run: ./run.sh test mysql "$LABEL"
+
+      - name: Ratchet against the committed control list
+        if: ${{ !cancelled() }}
+        working-directory: tools/core-phpunit
+        run: |
+          out="results/$LABEL"
+          mkdir -p "$out/summary"
+          python3 ratchet.py --expected baseline/mysql-control-pass.txt --meta baseline/mysql-control.json \
+            check "$out/junit.xml" --label "$LABEL" --title "Core PHPUnit MySQL control" \
+            --phpunit-log "$out/phpunit.log" --summary-md "$GITHUB_STEP_SUMMARY" \
+            --csv "$out/summary/run-summary.csv" --out-dir "$out/summary"
+
+      - name: Compress JUnit
+        if: ${{ !cancelled() }}
+        working-directory: tools/core-phpunit
+        run: |
+          out="results/$LABEL"
+          if [ -f "$out/junit.xml" ]; then gzip -c "$out/junit.xml" > "$out/summary/junit.xml.gz"; fi
+          if [ -f "$out/phpunit.log" ]; then gzip -c "$out/phpunit.log" > "$out/summary/phpunit.log.gz"; fi
+
+      - name: Upload results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: core-phpunit-mysql-control
+          path: tools/core-phpunit/results/${{ env.LABEL }}/summary/
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Tear down containers and volumes
+        if: ${{ always() }}
+        working-directory: tools/core-phpunit
+        run: ./run.sh down

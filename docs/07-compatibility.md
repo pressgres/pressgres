@@ -54,6 +54,7 @@ Planned scope beyond the current matrix:
 - Integration: real PG roles, TLS, Redis, DB drop-in, wpdb compatibility, schema migration.
 - E2E: site install, users/posts/taxonomy/comments/media, Gutenberg, REST, plugin lifecycle, upgrade and backup restore.
 - Negative: unsupported version, bad TLS, stale patch, invalid UUID, unsafe plugin, Redis outage, migration interrupt.
+- Core PHPUnit (I-010, `.github/workflows/core-phpunit.yml`): the upstream `wordpress-develop` 7.1.5 suite runs on PostgreSQL 18 on every relevant PR and on `main`. Per [ADR-0006](adr/0006-version-policy.md), the **gate is the ratchet**: a committed expected-pass list (`tools/core-phpunit/baseline/expected-pass.txt`) where any test that stops passing fails CI, plus failure if the bootstrap does not reach PHPUnit or the JUnit test count drops by more than 1 %. The **pass rate**, and the comparable pass rate against a MySQL control, is a **published trend**, never a pass/fail threshold. Until the managed patchset exists (M2), the PostgreSQL target is the R-003 prototype in R-009 configuration PG-C, so the numbers measure distance from the target, not support. Details: [tools/core-phpunit/README.md](../tools/core-phpunit/README.md#ci-i-010).
 
 ## Authoritative resources
 

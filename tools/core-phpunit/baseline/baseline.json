@@ -1,0 +1,28 @@
+{
+  "comparable_pass_rate": 77.47,
+  "configuration": "PG-C: R-003 prototype behind config/r009-db-wrapper.php, prototype schema pre-created, --filter '/^(?!Tests_Admin_IncludesSchema::)/'",
+  "control_passing": 30801,
+  "error": 2976,
+  "expected_pass": 23861,
+  "failure": 3105,
+  "generated_from": "two local runs (pgsql-c-run1, pgsql-c-run2); expected-pass = passing in both, minus flaky.txt; counts from run 1",
+  "generated_utc": "2026-11-23T15:53:01Z",
+  "host": "Docker linux/aarch64 VM on Apple Silicon (local)",
+  "pass": 23928,
+  "pass_rate": 78.58,
+  "php": "8.4.28",
+  "phpunit": "9.6.39",
+  "postgresql": "18.6 (postgres:18.6-alpine)",
+  "prototype": {
+    "db_php_sha256": "2310bf9a91267d3a6cf4589f383a39389a587b14e7db742d0de9816d7eae6e4c",
+    "dir": "prototypes/r-003",
+    "patch_sha256": "ba580154f0a0585306fd8cc99f9d0d39b14cb5554263172c6ef6c6408f0c9bd3",
+    "schema_sha256": "d1ef3189fd097932f4d9c9b65b131b7149a1dfad39a329f7a53cbfb85ccf53ec"
+  },
+  "skipped": 443,
+  "tests": 30452,
+  "wordpress_develop": {
+    "commit": "984163c92ef66b6186538ecf01bacb97fc097541",
+    "tag": "7.1.5"
+  }
+}
