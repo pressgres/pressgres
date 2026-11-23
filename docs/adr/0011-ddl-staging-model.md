@@ -1,6 +1,6 @@
 # ADR-0011: DDL staging model (schema planner and migrator role only; web runtime never executes DDL)
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-23)
 - **Date:** 2026-11-23
 - **Deciders:** Project lead (solo maintainer)
 - **Related issues:** pressgres/pressgres#8 (R-006), R-002, pressgres/pressgres#9 (R-009), S-001, D-003, P-003; ADR-003, ADR-004, ADR-008, ADR-009

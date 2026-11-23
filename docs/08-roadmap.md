@@ -4,23 +4,25 @@ This is a **dependency-based roadmap, not a date forecast**. Milestones require 
 
 ## M0 — Feasibility and ADR sign-off (Research)
 
-- [ ] R-001 audit WP 7.1 integer ID assumptions in PHP and editor/REST (L).
-- [ ] R-002 enumerate WP schema and plugin installation/upgrade SQL paths (M).
-- [ ] R-003 prototype `uuidv7()` and `INSERT ... RETURNING "ID"` via `$wpdb` adapter (M).
-- [ ] R-004 choose SQL parser license, grammar scope and performance approach (M).
-- [ ] R-005 choose WordPress patching mechanism and verify redistribution/licensing obligations (M).
-- [ ] R-006 implement threat model and proof-of-concept plugin sandbox (M).
-- [ ] R-007 record ADR-001..011 and go/no-go decision (S).
+- [x] R-001 audit WP 7.1 integer ID assumptions in PHP and editor/REST (L).
+- [x] R-002 enumerate WP schema and plugin installation/upgrade SQL paths (M).
+- [x] R-003 prototype `uuidv7()` and `INSERT ... RETURNING "ID"` via `$wpdb` adapter (M).
+- [x] R-004 choose SQL parser license, grammar scope and performance approach (M).
+- [x] R-005 choose WordPress patching mechanism and verify redistribution/licensing obligations (M).
+- [x] R-006 implement threat model and proof-of-concept plugin sandbox (M).
+- [x] R-007 record ADR-001..011 and go/no-go decision (S).
 - [ ] R-008 user discovery: interview 5–10 PostgreSQL-standardized organizations, pick first persona (M).
-- [ ] R-009 baseline the upstream WordPress core PHPUnit suite against the PostgreSQL prototype; publish pass rate (M).
-- [ ] R-010 ADR: object cache backend, Redis vs Valkey licensing (S).
-- [ ] R-011 document the UUID-only rationale and requirements (why not dual IDs) (S).
-- [ ] R-012 audit block editor / JS packages / REST clients for numeric-ID assumptions (L).
-- [ ] R-013 estimate core patchset size and per-release rebase cost (M).
+- [x] R-009 baseline the upstream WordPress core PHPUnit suite against the PostgreSQL prototype; publish pass rate (M).
+- [x] R-010 ADR: object cache backend, Redis vs Valkey licensing (S).
+- [x] R-011 document the UUID-only rationale and requirements (why not dual IDs) (S).
+- [x] R-012 audit block editor / JS packages / REST clients for numeric-ID assumptions (L).
+- [x] R-013 estimate core patchset size and per-release rebase cost (M).
 - [ ] R-014 select the two initial plugin compatibility targets (S).
 - [ ] R-015 licensing and trademark clearance for name and repository LICENSE (M).
 
 **Exit:** demonstrable UUID insert/get across PHP + REST without truncation, and documented patch scope. **Hard stop** if viable managed patchset strategy not found.
+
+**Outcome (2026-11-23):** exit criteria met; **GO as a solo preview pilot**, production support deferred until the conditions in [R-007](research/R-007-m0-go-no-go.md) are met. R-008, R-014 and R-015 continue in parallel with M1.
 
 ## M1 — Installer foundation (Alpha skeleton)
 

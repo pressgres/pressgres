@@ -1,6 +1,6 @@
 # ADR-0005: Local development (DDEV and Docker Compose, no forced Docker production runtime)
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-23)
 - **Date:** 2026-11-23
 - **Deciders:** Project lead (solo maintainer)
 - **Related issues:** R-003 (pressgres/pressgres#5), R-006 (pressgres/pressgres#8), R-009 (pressgres/pressgres#9); ADR-006, ADR-010

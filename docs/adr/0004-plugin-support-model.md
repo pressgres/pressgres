@@ -1,6 +1,6 @@
 # ADR-0004: Plugin support model (reviewed, signed manifests and disposable activation tests)
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-23)
 - **Date:** 2026-11-23
 - **Deciders:** Project lead (solo maintainer)
 - **Related issues:** pressgres/pressgres#8 (R-006); R-014 (initial plugin targets), R-008 (user discovery), R-001, R-012; ADR-001, ADR-002, ADR-003, ADR-011

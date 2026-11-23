@@ -1,6 +1,6 @@
 # ADR-0008: Foreign key enforcement (gradual, after compatibility tests)
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-23)
 - **Date:** 2026-11-23
 - **Deciders:** Project lead (solo maintainer)
 - **Related issues:** pressgres/pressgres#5 (R-003), R-002, R-009 (pressgres/pressgres#9), D-003; ADR-002, ADR-009, ADR-011

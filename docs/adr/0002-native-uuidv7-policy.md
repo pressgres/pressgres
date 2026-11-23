@@ -1,6 +1,6 @@
 # ADR-0002: Native UUIDv7 identity policy (UUID-only, no dual IDs)
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-23)
 - **Date:** 2026-11-23
 - **Deciders:** Project lead (solo maintainer)
 - **Related issues:** pressgres/pressgres#12 (R-011); R-001, R-002, R-003, R-009, R-012, R-013; ADR-0001, ADR-008 (foreign keys), ADR-009 (legacy migration)

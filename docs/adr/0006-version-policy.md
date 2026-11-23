@@ -1,6 +1,6 @@
 # ADR-0006: Version policy (WordPress 7.1, PHP 8.4, PostgreSQL 18; one supported series; best-effort security updates)
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-23)
 - **Date:** 2026-11-23
 - **Deciders:** Project lead (solo maintainer)
 - **Related issues:** pressgres/pressgres#9 (R-009), pressgres/pressgres#7 (R-005); R-013, R-007 (go/no-go), I-010 (CI); ADR-001, ADR-005
