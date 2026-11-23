@@ -41,7 +41,7 @@ case "$cmd" in
   prepare)
     [ -f "$WP_DEVELOP_REF/phpunit.xml.dist" ] || { echo "WP_DEVELOP_REF does not look like wordpress-develop: $WP_DEVELOP_REF" >&2; exit 1; }
     runner bash -ceu '
-      rsync -a --delete --exclude node_modules --exclude vendor --exclude .git /reference/ /srv/wordpress-develop/
+      rsync -a --no-owner --no-group --delete --exclude node_modules --exclude vendor --exclude .git /reference/ /srv/wordpress-develop/
       cp /harness/wp-tests-config.php /srv/wordpress-develop/wp-tests-config.php
       mkdir -p /srv/wordpress-develop/tests/phpunit/build/logs
       echo "prepared: $(find /srv/wordpress-develop/tests/phpunit/tests -name "*.php" | wc -l) test files"
