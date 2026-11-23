@@ -16,7 +16,8 @@
 | Command | Intent | Maturity |
 |---|---|---|
 | `wps version` | versions/hashes | M1 implemented |
-| `wps init` | generate validated config | M1 |
+| `wps init` | generate validated config | M1 implemented |
+| `wps config validate` | validate YAML and secret references | M1 implemented |
 | `wps doctor` | environment preflight | M1 |
 | `wps plan install` | non-mutating plan | M1 |
 | `wps install` | provision & initialize | M2 |
@@ -79,6 +80,38 @@ Run `vendor/bin/wps version --format=json --no-interaction` for the [`pressgres.
 
 JSON mode writes one envelope to stdout, including on usage and internal errors. `command` is `null` when the dispatcher cannot identify a command. For failures the envelope includes a diagnostic and a matching correlation ID. Human mode sends errors to stderr. The checked-in manifest records preview pins and uses `null` for unavailable release hashes.
 
+## Tested configuration commands
+
+From the repository root, generate and validate a configuration in a fresh output directory.
+
+```bash
+output_dir="$(mktemp -d)"
+vendor/bin/wps init --profile postgres-native-uuid --output "$output_dir/pressgres.yaml" --dry-run
+vendor/bin/wps init --profile postgres-native-uuid --output "$output_dir/pressgres.yaml"
+vendor/bin/wps config validate --config "$output_dir/pressgres.yaml" --format=json
+```
+
+```text
+Dry run complete. No files written.
+Wrote configuration and .env.example.
+```
+
+```json
+{
+    "schema": "pressgres.cli/v1",
+    "command": "config validate",
+    "status": "ok",
+    "exit_code": 0,
+    "data": {
+        "schema_version": "1.0"
+    },
+    "diagnostics": [],
+    "correlation_id": null
+}
+```
+
+`--output` defaults to `pressgres.yaml`. Its parent directory must exist. `init` writes the YAML with mode `0600` and writes a credential-free `.env.example` with mode `0644` alongside it. Either existing file causes exit 2 unless you pass `--force`. The command refuses symlinks and other non-regular destinations. It stages both files before publishing each atomically. The two publications are separate filesystem operations, so an abrupt interruption between them can leave one output. `--dry-run` checks the profile, templates and destination conflicts without writing files.
+
 ## Preflight version and capability checks
 
 - PHP binary and FPM runtime must agree; check 8.4.x and required extensions: `pdo_pgsql`, `pgsql` if used, `redis`, `json`, `mbstring`, `curl`, `openssl`, `dom`, `xml`, `zip`, `intl`, `fileinfo`, `sodium` (project policy, not all upstream WordPress requirements).
@@ -102,7 +135,16 @@ Only installer process receives migration credentials. Do not include them in pe
 
 ## Configuration resolution
 
-Merge defaults < checked-in YAML < environment secret references < explicit CLI overrides (non-secret only). Reject unknown keys and inconsistent flags. Never print resolved secrets. Sign/lock effective non-secret config and artifact hashes for audits. Sample: [config](../examples/config/pressgres.yaml).
+The installer resolves defaults < YAML < environment-supplied secret references < explicit non-secret CLI overrides. `wps config validate` checks the YAML layer against the [v1.0 schema](../apps/installer-cli/schemas/pressgres-v1.json). Set `schema_version: '1.0'`. Omitted settings are eligible for defaults during later configuration resolution. The [sample YAML](../examples/config/pressgres.yaml) matches the generated profile and includes the preview WordPress pin, native UUIDv7 and Valkey. Validation accepts a local YAML file up to 64 KiB and rejects aliases and custom tags.
+
+The database runtime and migrator passwords and the Valkey password accept these forms.
+
+- `env:NAME` uses an environment variable whose name matches `[A-Za-z_][A-Za-z0-9_]*`.
+- `file:/absolute/path` uses an absolute local file path with a filename and without control characters. Quote the reference in YAML when the path contains spaces.
+
+Keep the migrator's role and secret reference separate from the runtime's. Supply the migrator credential only to installer processes. `.env.example` lists variables with empty values, and both config commands treat references as syntax without reading their targets.
+
+Exit 2 covers invalid YAML, unknown keys and other schema errors. Plaintext in password fields, invalid password references and a shared database password reference cause exit 5. Security failures take priority when both kinds of diagnostic are present. In JSON mode, `diagnostics[].context.path` carries an RFC 6901 JSON pointer. Unknown keys use the pointer to their containing mapping so the command can redact the key name as well as its value. The empty pointer denotes the document root.
 
 ## Installer anti-goals
 

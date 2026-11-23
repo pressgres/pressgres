@@ -1,0 +1,103 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Pressgres configuration v1.0",
+    "required": ["schema_version"],
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "schema_version": {"const": "1.0"},
+        "project": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "name": {"type": "string", "minLength": 1},
+                "environment": {"enum": ["production", "staging", "development"]}
+            }
+        },
+        "wordpress": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "version": {"const": "7.1.5"},
+                "core_mode": {"const": "managed_uuid"},
+                "auto_updates": {"const": false},
+                "multisite": {"const": false}
+            }
+        },
+        "identity": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "type": {"const": "uuid"},
+                "version": {"const": 7},
+                "generator": {"const": "postgresql"},
+                "allow_integer_fallback": {"const": false}
+            }
+        },
+        "database": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "engine": {"const": "postgresql"},
+                "minimum_version": {"const": "18"},
+                "driver": {"const": "pdo_pgsql"},
+                "host": {"$ref": "#/definitions/host"},
+                "name": {"type": "string", "minLength": 1},
+                "runtime_user": {"type": "string", "minLength": 1},
+                "password": {"$ref": "#/definitions/secretReference"},
+                "migrator_user": {"type": "string", "minLength": 1},
+                "migrator_password": {"$ref": "#/definitions/secretReference"},
+                "sslmode": {"const": "verify-full"},
+                "sslrootcert": {"type": "string", "minLength": 1},
+                "unsupported_sql": {"const": "reject"}
+            }
+        },
+        "redis": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "enabled": {"type": "boolean"},
+                "backend": {"const": "valkey"},
+                "driver": {"const": "phpredis"},
+                "host": {"$ref": "#/definitions/host"},
+                "password": {"$ref": "#/definitions/secretReference"},
+                "tls": {"const": true},
+                "prefix": {"type": "string", "minLength": 1},
+                "fail_policy": {"const": "request_local_cache"}
+            }
+        },
+        "security": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "profile": {"const": "hardened"},
+                "require_https": {"const": true},
+                "separate_migration_role": {"const": true},
+                "admin_file_modifications": {"const": false},
+                "audit_log": {"const": true}
+            }
+        },
+        "plugins": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "unknown_policy": {"const": "quarantine"},
+                "require_approved_adapters": {"const": true},
+                "run_migrations_in_sandbox": {"const": true}
+            }
+        },
+        "installer": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "strict_versions": {"const": true},
+                "backup_before_upgrade": {"const": true},
+                "fail_on_missing_core_patch": {"const": true}
+            }
+        }
+    },
+    "definitions": {
+        "host": {"type": "string", "pattern": "^(?:[A-Za-z0-9_.-]+|\\[?[A-Fa-f0-9:]*:[A-Fa-f0-9:.]+\\]?)(?![\\s\\S])"},
+        "secretReference": {"type": "string", "description": "An environment variable name or an absolute local secret file path.", "pattern": "^(?:env:[A-Za-z_][A-Za-z0-9_]*|file:/[^/\\x00-\\x1f\\x7f](?:[^\\x00-\\x1f\\x7f]*[^/\\x00-\\x1f\\x7f])?)(?![\\s\\S])"}
+    }
+}
