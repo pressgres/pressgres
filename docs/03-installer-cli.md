@@ -15,7 +15,7 @@
 
 | Command | Intent | Maturity |
 |---|---|---|
-| `wps version` | versions/hashes | M0 |
+| `wps version` | versions/hashes | M1 implemented |
 | `wps init` | generate validated config | M1 |
 | `wps doctor` | environment preflight | M1 |
 | `wps plan install` | non-mutating plan | M1 |
@@ -30,6 +30,54 @@
 | `wps support bundle --redact` | debugging | M5 |
 
 Exit codes: 0 successful; 1 unexpected internal error (bug; always includes correlation ID); 2 invalid usage/config; 3 unsupported version; 4 unreachable dependency; 5 security failure; 6 incompatible plugin/SQL; 7 migration failure; 8 verification failure; 9 partial application requires recovery; 10 lock contention. Structured JSON output with `--format=json`; `--no-interaction`; `--dry-run` on mutating operations.
+
+## Tested `wps version` output
+
+After `composer install` in the repository root, run `vendor/bin/wps version`. The test suite snapshots both formats using the running PHP version. The examples below were captured with PHP 8.4.27.
+
+```text
+Pressgres 0.1.0
+PHP 8.4.27
+WordPress 7.1.5 (wordpress-develop: 984163c92ef66b6186538ecf01bacb97fc097541)
+Gutenberg 89408c2b9bd944575dfa9039bc6870da1c8f56cb
+PostgreSQL 18 (minimum major)
+Valkey 9.2.0 (default)
+Artifact hashes
+  wordpress_archive_sha256: unavailable
+  patchset_sha256: unavailable
+  gutenberg_archive_sha256: unavailable
+  composer_lock_sha256: unavailable
+```
+
+Run `vendor/bin/wps version --format=json --no-interaction` for the [`pressgres.cli/v1` result envelope](../apps/installer-cli/schemas/cli-v1.json).
+
+```json
+{
+    "schema": "pressgres.cli/v1",
+    "command": "version",
+    "status": "ok",
+    "exit_code": 0,
+    "data": {
+        "pressgres_version": "0.1.0",
+        "php_version": "8.4.27",
+        "wordpress_version": "7.1.5",
+        "wordpress_develop_commit": "984163c92ef66b6186538ecf01bacb97fc097541",
+        "gutenberg_commit": "89408c2b9bd944575dfa9039bc6870da1c8f56cb",
+        "postgresql_minimum_major": 18,
+        "valkey_default_version": "9.2.0",
+        "artifact_hashes": {
+            "wordpress_archive_sha256": null,
+            "patchset_sha256": null,
+            "gutenberg_archive_sha256": null,
+            "composer_lock_sha256": null
+        }
+    },
+    "diagnostics": [],
+    "correlation_id": null
+}
+```
+
+JSON mode writes one envelope to stdout, including on usage and internal errors. `command` is `null` when the dispatcher cannot identify a command. For failures the envelope includes a diagnostic and a matching correlation ID. Human mode sends errors to stderr. The checked-in manifest records preview pins and uses `null` for unavailable release hashes.
 
 ## Preflight version and capability checks
 

@@ -18,6 +18,7 @@ Run from the repository root with PHP 8.4 and Composer 2.10.3.
 ```bash
 composer validate --strict
 composer validate --strict packages/contracts/composer.json
+composer validate --strict apps/installer-cli/composer.json
 composer install --no-interaction --prefer-dist --no-progress
 composer check-platform-reqs
 composer audit
@@ -26,7 +27,7 @@ composer analyse
 composer test
 ```
 
-The PHP workflow runs the same checks. The contracts unit suite runs without a database or WordPress installation.
+The PHP workflow runs the same checks. The contracts and installer CLI unit suites run without a database or WordPress installation.
 
 ## Coding guardrails
 

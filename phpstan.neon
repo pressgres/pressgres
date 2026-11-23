@@ -4,3 +4,6 @@ parameters:
     paths:
         - packages/contracts/src
         - tests/unit
+        - apps/installer-cli/bin/wps
+        - apps/installer-cli/src
+        - apps/installer-cli/tests

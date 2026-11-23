@@ -1,0 +1,11 @@
+Pressgres 0.1.0
+PHP {{PHP_VERSION}}
+WordPress 7.1.5 (wordpress-develop: 984163c92ef66b6186538ecf01bacb97fc097541)
+Gutenberg 89408c2b9bd944575dfa9039bc6870da1c8f56cb
+PostgreSQL 18 (minimum major)
+Valkey 9.2.0 (default)
+Artifact hashes
+  wordpress_archive_sha256: unavailable
+  patchset_sha256: unavailable
+  gutenberg_archive_sha256: unavailable
+  composer_lock_sha256: unavailable
