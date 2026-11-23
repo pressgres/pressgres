@@ -36,15 +36,16 @@ jobs:
           persist-credentials: false
       - uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
-          # Internal links always; external links too, but tolerate rate limiting.
-          # gnu.org regularly times out from GitHub-hosted runners (PR #99), so it is excluded.
+          # Pull requests block on internal (repository) links only: external sites
+          # (gnu.org timeouts, GitHub 503s) flaked unrelated PRs (#99, #101).
+          # Pushes to main, the weekly schedule and manual runs also check external links.
           args: >-
+            ${{ github.event_name == 'pull_request' && '--offline' || '' }}
             --no-progress
             --accept 200,206,429
             --max-retries 3
             --timeout 30
             --exclude "^https://github\.com/orgs/pressgres/projects"
-            --exclude "^https://www\.gnu\.org/"
             "**/*.md"
           fail: true
 
