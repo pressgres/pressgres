@@ -1,0 +1,4 @@
+tier,named_lines,named_files,named_hunks,sampled_novel_edits,sampled_file_delta,sampled_hunk_delta,projected_extra_lines,projected_extra_files,projected_extra_hunks,upstream_lines,upstream_files,upstream_hunks,php_helper_lines,js_helper_lines,native_schema_lines,new_files_and_hunks,total_files,total_hunks
+low,1188,167,868,17,4,14,236,14,117,1424,181,985,120,60,150,3,184,988
+expected,1527,240,1153,18,4,15,398,44,265,1925,284,1418,220,110,190,4,288,1422
+high,2904,484,1969,18,2,11,588,49,359,3492,533,2328,380,180,260,6,539,2334
